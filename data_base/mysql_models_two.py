@@ -159,7 +159,7 @@ class LoginUsersPhone(Base):
     login = Column(String(12, 'utf8mb3_unicode_ci'), nullable=False, comment='Логин')
     password = Column(String(19, 'utf8mb3_unicode_ci'), nullable=False, comment='Пароль')
     mess_name = Column(String(40, 'utf8mb3_unicode_ci'), nullable=False, comment='Имя в месседжере')
-    mess_user_id = Column(String(100, 'utf8mb3_unicode_ci'), nullable=False, comment='ID в месседжере')
+    mess_user_id = Column(String(100, 'utf8mb3_unicode_ci'), nullable=False, comment='ID в меседжере')
 
 
 class MonitoringSystem(Base):
@@ -665,15 +665,21 @@ class InfoServObj(Base):
     __tablename__ = 'info_serv_obj'
     __table_args__ = {'comment': 'Объекты с информационными сервисами'}
 
-    serv_obj_id = Column(Integer, primary_key=True, comment='ID объекта привязанного к сервису')
+    serv_obj_id = Column(Integer, primary_key=True, comment='ID подписки')
     serv_obj_sys_mon_id = Column(ForeignKey('ca_objects.id', ondelete='RESTRICT', onupdate='RESTRICT'), nullable=False, index=True, comment='Внутренний ID объекта\\r\\nБазы данных из СМ')
     info_obj_serv_id = Column(ForeignKey('information_services.serv_id', ondelete='RESTRICT', onupdate='RESTRICT'), nullable=False, index=True, comment='ID ведёт сервисам')
     subscription_start = Column(DateTime, nullable=False, comment='Время начала подписки')
     subscription_end = Column(DateTime, comment='Время окончания подписки')
-    tel_num_user = Column(String(11, 'utf8mb3_unicode_ci'), nullable=False, comment='Телефонный номер с которого созданна услуга')
-    service_counter = Column(Integer, nullable=False, comment='СЧЁТЧИК услуг\\r\\n1- мгновенно\\r\\n2-раз в день\\r\\n4-раз в неделю\\r\\n8-раз в месяц')
+    tel_num_user = Column(VARCHAR(11), comment='Телефонный номер с которого созданна услуга')
+    service_counter = Column(Integer, nullable=False, comment='СЧЁТЧИК услуг\\r\\n0- мгновенно\\r\\n1-раз в день\\r\\n2-раз в неделю\\r\\n3-раз в месяц')
+    stealth_type = Column(TINYINT, nullable=False, comment='0 - автоматический\\r\\n1 - с проверкой')
+    monitoring_sys = Column(ForeignKey('monitoring_system.mon_sys_id', ondelete='RESTRICT', onupdate='RESTRICT'), nullable=False, index=True, comment='Система мониторинга')
+    sys_id_obj = Column(String(100, 'utf8mb3_unicode_ci'), nullable=False, comment='ID объекта в системе мониторинга')
+    sys_login = Column(String(100, 'utf8mb3_unicode_ci'), nullable=False, comment='Логин пользователя от системы мониторинга')
+    sys_password = Column(String(100, 'utf8mb3_unicode_ci'), nullable=False, comment='Пароль пользователя от СМ')
 
     info_obj_serv = relationship('InformationService')
+    monitoring_system = relationship('MonitoringSystem')
     serv_obj_sys_mon = relationship('CaObject')
 
 
@@ -707,11 +713,13 @@ class SimCard(Base):
     sim_owner = Column(TINYINT(1), comment="1, 'Мы'\\r\\n0, 'Клиент'")
     sim_device_id = Column(ForeignKey('devices.device_id'), index=True, comment='ID к девайсам(devices)')
     sim_date = Column(DateTime, comment='Дата регистрации сим')
-    status = Column(Integer, comment='Активность симки:\\r\\n0-списана, 1-активна, 2-приостан, 3-первичная блокировка, 4-статус неизвестен')
+    status = Column(Integer, comment='Активность симки:\\r\\n0-списана, 1-активна, 2-приостан, 3-первичная блокировка, 4-статус неизвестен,\\r\\n5 - Сезонная блокировка')
     terminal_imei = Column(String(25, 'utf8mb3_unicode_ci'), comment='IMEI терминала в который вставлена симка')
     contragent_id = Column(ForeignKey('Contragents.ca_id', ondelete='SET NULL', onupdate='SET NULL'), index=True, comment='ID контрагента')
     ca_uid = Column(String(100, 'utf8mb3_unicode_ci'), comment='Уникальный id контрагента')
     itprogrammer_id = Column(ForeignKey('auth_user.id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='ID сотрудника програмировавшего терминал')
+    block_start = Column(DateTime, comment='Начало блокировки')
+    block_end = Column(DateTime, comment='Предварительный конец блокировки')
 
     contragent = relationship('Contragent')
     itprogrammer = relationship('AuthUser')

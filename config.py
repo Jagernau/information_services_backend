@@ -4,16 +4,20 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-TOKEN=envi.get('TOKEN')
-CHAT_ID=envi.get('CHAT_ID')
-DB_HOST=envi.get('DB_HOST')
-MYSQL_USER=envi.get('MYSQL_USER')
-MYSQL_DB_NAME=envi.get('MYSQL_DB_NAME')
-MYSQL_PASSWORD=envi.get('MYSQL_PASSWORD')
-MYSQL_PORT=envi.get('MYSQL_PORT')
+DB_HOST_TWO = envi.get('DB_HOST_TWO')
+MYSQL_USER_TWO = envi.get('MYSQL_USER_TWO')
+MYSQL_DB_NAME_TWO = envi.get('MYSQL_DB_NAME_TWO')
+MYSQL_PASSWORD_TWO = envi.get('MYSQL_PASSWORD_TWO')
+MYSQL_PORT_TWO = envi.get('MYSQL_PORT_TWO')
+connection_mysql_two = f"mysql+mysqlconnector://{MYSQL_USER_TWO}:{MYSQL_PASSWORD_TWO}@{DB_HOST_TWO}:{MYSQL_PORT_TWO}/{MYSQL_DB_NAME_TWO}"
 
-connection_mysql = f"mysql+mysqlconnector://{MYSQL_USER}:{MYSQL_PASSWORD}@{DB_HOST}:{MYSQL_PORT}/{MYSQL_DB_NAME}"
 
+DB_HOST_THREE = envi.get('DB_HOST_THREE')
+MYSQL_USER_THREE = envi.get('MYSQL_USER_THREE')
+MYSQL_DB_NAME_THREE = envi.get('MYSQL_DB_NAME_THREE')
+MYSQL_PASSWORD_THREE = envi.get('MYSQL_PASSWORD_THREE')
+MYSQL_PORT_THREE = envi.get('MYSQL_PORT_THREE')
+connection_mysql_three = f"mysql+mysqlconnector://{MYSQL_USER_THREE}:{MYSQL_PASSWORD_THREE}@{DB_HOST_THREE}:{MYSQL_PORT_THREE}/{MYSQL_DB_NAME_THREE}"
 
 GLONASS_BASED_ADRESS=envi.get('GLONASS_BASED_ADRESS')
 GLONASS_LOGIN=envi.get('GLONASS_LOGIN')
