@@ -162,6 +162,4 @@ cython_debug/
 *.json
 log.txt
 *_terminal_adress.txt
-*.txt
-.txt
 

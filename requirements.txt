@@ -1,0 +1,16 @@
+APScheduler==3.11.0
+certifi==2024.8.30
+charset-normalizer==3.4.0
+greenlet==3.1.1
+idna==3.10
+inflect==7.4.0
+more-itertools==10.5.0
+mysql-connector-python==9.1.0
+python-dotenv==1.0.1
+requests==2.32.3
+sqlacodegen==2.3.0.post1
+SQLAlchemy==1.4.54
+typeguard==4.4.1
+typing_extensions==4.12.2
+tzlocal==5.2
+urllib3==2.2.3
