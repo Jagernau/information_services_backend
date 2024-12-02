@@ -38,8 +38,6 @@ class TaskGenerator:
     def get_unic_all_tasks(self):
         return {task["serv_obj_id"] for task in self.all_tasks}
 
-
-
     def starter_task(
             self,
             serv_obj_id,
@@ -100,8 +98,8 @@ class TaskGenerator:
                 logger.info(f"Задача {serv_obj_id} завершена или вышла за границы времени.")
                 # Удаляем задачу из списка задач
                 self.all_tasks = [task for task in self.all_tasks if task["serv_obj_id"] != serv_obj_id]
-                logger.info(f'Задача {serv_obj_id} завершена и удалена и коллектора задач, текущее время {now_time}')
+                logger.info(f'Задача {serv_obj_id} завершена и удалена из коллектора задач, текущее время {now_time}')
                 break
 
-            time.sleep(1)
+            time.sleep(5)
 

@@ -3,7 +3,9 @@ from datetime import datetime
 from my_logger import logger
 from data_base import crud
 from tasks import task_collector
+from concurrent.futures import ThreadPoolExecutor
 
+executor = ThreadPoolExecutor(max_workers=10, thread_name_prefix="TaskWorker")
 task_generator = task_collector.TaskGenerator()
 
 while True:
@@ -19,7 +21,9 @@ while True:
 
         for serv in all_serv:
             if serv.serv_obj_id not in all_unic_tasks:
-                task_generator.starter_task(
+                # Передаём задачу в пул потоков
+                executor.submit(
+                        task_generator.starter_task,
                         serv_obj_id = serv.serv_obj_id, 
                         serv_obj_sys_mon_id = serv.serv_obj_sys_mon_id, 
                         info_obj_serv_id = serv.info_obj_serv_id, 

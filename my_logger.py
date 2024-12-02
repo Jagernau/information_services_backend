@@ -7,8 +7,8 @@ logger.setLevel(logging.INFO)
 file_handler = logging.FileHandler('log.txt')
 file_handler.setLevel(logging.INFO)
 
-
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+# Формат логов с добавлением имени потока
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - [%(threadName)s] - %(message)s')
 file_handler.setFormatter(formatter)
 
 # Добавление обработчика к логгеру
