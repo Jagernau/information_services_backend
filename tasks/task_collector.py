@@ -129,5 +129,5 @@ class TaskGenerator:
                 logger.info(f'Задача {serv_obj_id} завершена и удалена из коллектора задач, текущее время {now_time}')
                 break
 
-            time.sleep(1)
+            time.sleep(5)
 
