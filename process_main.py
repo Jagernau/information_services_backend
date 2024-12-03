@@ -23,7 +23,6 @@ def process_task_group(task_group):
                 **task
             )
 
-
 while True:
     now_time = datetime.now()
     all_unic_tasks = task_generator.get_unic_all_tasks()
@@ -61,4 +60,3 @@ while True:
             process_executor.map(process_task_group, task_groups)
 
     time.sleep(10)
-

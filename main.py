@@ -18,7 +18,6 @@ while True:
     except Exception as e:
         logger.error(f"Не получилось получить данные из БД_2 {e}")
     else:
-
         for serv in all_serv:
             if serv.serv_obj_id not in all_unic_tasks:
                 # Передаём задачу в пул потоков
@@ -38,7 +37,7 @@ while True:
                         sys_password = serv.sys_password 
                         )
 
-    time.sleep(10)
+    time.sleep(20)
 
 
 
