@@ -20,3 +20,4 @@ class ServiceEvent(Base):
     client_name = Column(String(300, 'utf8mb3_unicode_ci'), comment='Имя клиента')
     it_name = Column(String(300, 'utf8mb3_unicode_ci'), comment='Имя фамилия ИТ специалиста')
     necessary_treatment = Column(TINYINT, comment='Нужна ли обработка IT специалистом')
+    result = Column(String(1000, 'utf8mb3_unicode_ci'), comment='результат сервиса')
