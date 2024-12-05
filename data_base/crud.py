@@ -26,7 +26,8 @@ def add_report_to_three(
             client_name, # 'Имя клиента' --- - 
             it_name, # 'Имя фамилия ИТ специалиста' ---
             necessary_treatment, # 'Нужна ли обработка IT специалистом'
-            result
+            result,
+            login
         ):
     """
     Добавляется отчёт в Базу данных 2
@@ -42,7 +43,8 @@ def add_report_to_three(
                 client_name=client_name,
                 it_name=it_name,
                 necessary_treatment=necessary_treatment,
-                result=result
+                result=result,
+                login=login
             )
     session.add(report)
     session.commit()
@@ -73,11 +75,12 @@ def get_client_name(sys_login, sys_password):
     result = session.query(
             models_two.Contragent.ca_name,
             models_two.Contragent.service_manager,
-            ).outerjoin(
+            ).select_from(models_two.LoginUser).outerjoin(
                     models_two.Contragent, models_two.LoginUser.contragent_id == models_two.Contragent.ca_id
                     ).filter(
                             models_two.LoginUser.login == sys_login,
                             models_two.LoginUser.password == sys_password
                             ).first()
     session.close()
-    return result[0], result[1]
+    return [result[0], result[1]]
+
