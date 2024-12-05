@@ -21,3 +21,5 @@ class ServiceEvent(Base):
     it_name = Column(String(300, 'utf8mb3_unicode_ci'), comment='Имя фамилия ИТ специалиста')
     necessary_treatment = Column(TINYINT, comment='Нужна ли обработка IT специалистом')
     result = Column(String(1000, 'utf8mb3_unicode_ci'), comment='результат сервиса')
+    login = Column(String(100, 'utf8mb3_unicode_ci'), comment='Логин в системе мониторинга предполагается почта')
+    password = Column(String(100, 'utf8mb3_unicode_ci'), comment='Пароль')

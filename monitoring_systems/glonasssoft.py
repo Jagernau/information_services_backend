@@ -1,105 +1,88 @@
-import json
-import requests
-import time
+# monitoring_systems/glonasssoft.py
+import aiohttp
+import asyncio
+from typing import Optional
 
-import sys
-sys.path.append('../')
-from information_services import config
-
-# login = config.GLONASS_LOGIN # логин клиента
-# password = config.GLONASS_PASS # логин клиента
-# based_adres=str(config.GLONASS_BASED_ADRESS)
 
 class Glonasssoft:
-    """ 
-    Получение данных с систем мониторинга Глонассофт
+    """
+    Асинхронный клиент для получения данных с систем мониторинга Глонассофт.
     """
     def __init__(self, login: str, password: str, based_adres: str):
         self.login = login
         self.password = password
         self.based_adres = based_adres
 
-    def token(self):
-        """Получение Токена Глонассофт"""
-        time.sleep(1)
+    async def token(self) -> Optional[str]:
+        await asyncio.sleep(1)
+        """Получение токена авторизации."""
         url = f'{self.based_adres}v3/auth/login'
         data = {'login': self.login, 'password': self.password}
-        headers = {'Content-type': 'application/json', 'accept': 'json'}
-        response = requests.post(url, data=json.dumps(data), headers=headers)
-        if response.status_code == 200:
-            return response.json()["AuthId"]
-        else:
-            return None
+        headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=data, headers=headers) as response:
+                if response.status == 200:
+                    json_response = await response.json()
+                    return json_response.get("AuthId")
+                else:
+                    return None
 
-    def _get_request(self, url, token):
-        """Универсальный метод для выполнения GET-запросов"""
+    async def _get_request(self, url: str, token: str) -> Optional[dict]:
+        """Асинхронный метод для выполнения GET-запросов."""
         headers = {
             "X-Auth": f"{token}",
             'Content-type': 'application/json',
             'Accept': 'application/json'
         }
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return None
+        await asyncio.sleep(1)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers) as response:
+                if response.status == 200:
+                    return await response.json()
+                else:
+                    return None
 
-    def _post_request(self, url, token, data: dict):
-        """Универсальный метод для выполнения POST """
+    async def _post_request(self, url: str, token: str, data: dict) -> Optional[dict]:
+        """Асинхронный метод для выполнения POST-запросов."""
         headers = {
             "X-Auth": f"{token}",
             'Content-type': 'application/json',
             'Accept': 'application/json'
         }
-        response = requests.post(url, headers=headers, data=json.dumps(data))
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise Exception(response.text)
+        await asyncio.sleep(1)
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers=headers, json=data) as response:
+                if response.status == 200:
+                    return await response.json()
+                else:
+                    response_text = await response.text()
+                    raise Exception(f"POST request failed: {response_text}")
 
-    def get_all_vehicles_old(self, token: str):
-        """
-        Метод получения всех объектов glonasssoft
-        """
-        time.sleep(1)
-        return self._get_request(f"{self.based_adres}vehicles/", token)
+    async def get_all_vehicles_old(self, token: str) -> Optional[dict]:
+        """Метод получения всех объектов Glonasssoft."""
+        await asyncio.sleep(1)
+        url = f"{self.based_adres}vehicles/"
+        return await self._get_request(url, token)
 
-    def get_expense(self, token, obj_id, start, end):
-        """
-        Метод получения расхода ТС
-        """
-        time.sleep(1)
+    async def get_expense(self, token: str, obj_id: int, start: str, end: str) -> Optional[dict]:
+        """Метод получения расхода топлива ТС."""
+        await asyncio.sleep(1)
+        url = f"{self.based_adres}v3/vehicles/fuelConsumption"
         data = {
-                "vehicleIds": [obj_id,],
-                "from": str(start),
-                "to": str(end),
-            }
-        return self._post_request(f"{self.based_adres}v3/vehicles/fuelConsumption", token, data)
+            "vehicleIds": [obj_id],
+            "from": start,
+            "to": end
+        }
+        return await self._post_request(url, token, data)
 
-    def get_refuel(self, token, obj_id, start, end):
-        """
-        Метод получения сливов заправок
-        """
-        time.sleep(1)
+    async def get_refuel(self, token: str, obj_id: int, start: str, end: str) -> Optional[dict]:
+        """Метод получения данных о сливе и заправке топлива."""
+        await asyncio.sleep(1)
+        url = f"{self.based_adres}v3/vehicles/fuelInOut"
         data = {
-                "vehicleIds": [obj_id,],
-                "from": str(start),
-                "to": str(end),
-            }
-        return self._post_request(f"{self.based_adres}v3/vehicles/fuelInOut", token, data)
+            "vehicleIds": [obj_id],
+            "from": start,
+            "to": end
+        }
+        return await self._post_request(url, token, data)
 
-# glonass = Glonasssoft(login, password, based_adres)
-# glonass_token = glonass.token()
-# print(glonass_token)
-# # # # # all_vehicles = glonass.get_all_vehicles_old(str(glonass_token))
-# expen_data = glonass.get_expense(glonass_token, 548938, "2024-11-18T00:01", "2024-11-18T23:59")
-# print(expen_data[0])
-# print(expen_data[0]["name"])
-# print(expen_data[0]["periods"][0]["fuelLevelStart"])
-# print(expen_data[0]["periods"][0]["fuelLevelEnd"])
-# refuel_data = glonass.get_refuel(glonass_token, 548938, "2024-11-18T00:01", "2024-11-18T23:59")
-# print(refuel_data[0])
-# print(refuel_data[0])
-# print(refuel_data[0])
-# print(refuel_data[0])
-# print(refuel_data[0])
