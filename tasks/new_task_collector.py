@@ -39,11 +39,13 @@ class TaskGenerator:
         try:
             glonas_report = GlonassReport(kwargs['sys_login'], kwargs['sys_password'], GLONASS_BASED_ADRESS)
             now_time = datetime.now()
-            result = ""
+            result = None
 
             if kwargs['service_counter'] == 0:  # Отчёт раз в 5 минут
                 logger.info(f"Начался выполнятся мгновенный отчёт для задачи {kwargs['serv_obj_id']}")
-                result = await glonas_report.get_now_serv_fuel_up_down(kwargs['sys_id_obj'])
+                if kwargs["monitoring_sys"] == 1: # glonass
+                    if kwargs["info_obj_serv_id"] == 2: # сливы запр
+                        result = await glonas_report.get_now_serv_fuel_up_down(kwargs['sys_id_obj'])
                 if result:
                     # Добавление отчёта в базу данных
                     monitoring_sys_name = await CrudService.get_sys_mon_name(kwargs['monitoring_sys'])
@@ -71,7 +73,12 @@ class TaskGenerator:
             elif kwargs['service_counter'] == 1:  # Ежедневный отчёт
                 if now_time.hour == 9 and now_time.minute in range(0, 6):
                     logger.info(f"Выполняется ежедневный отчёт для задачи {kwargs['serv_obj_id']}")
-                    result = await glonas_report.get_yest_serv_fuel_up_down(kwargs['sys_id_obj'])
+
+                if kwargs["monitoring_sys"] == 1: # glonass
+                    if kwargs["info_obj_serv_id"] == 2: # сливы запр
+                        result = await glonas_report.get_yest_serv_fuel_up_down(kwargs['sys_id_obj'])
+                    if kwargs["info_obj_serv_id"] == 3: # расходу за предыдущий день
+                        result = await glonas_report.get_yest_serv_fuel_flow(kwargs['sys_id_obj'])
                     if result:
                         # Добавление отчёта в базу данных
                         monitoring_sys_name = await CrudService.get_sys_mon_name(kwargs['monitoring_sys'])
@@ -149,8 +156,6 @@ class TaskGenerator:
                     else:
                         logger.error(f"Отчёт не пришёл, задача засыпает")
                         await asyncio.sleep(60 * 60 * 24)
-
-
 
         except Exception as e:
             logger.error(f"Ошибка при генерации отчёта для задачи {kwargs['serv_obj_id']}: {e}")
