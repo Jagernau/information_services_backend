@@ -23,7 +23,7 @@ class TaskGenerator:
         return set(self.task_registry.keys())
 
     async def gen_random_num(self):
-        return random.uniform(0.9, 3.7)
+        return random.uniform(1.2, 3.7)
 
     async def stop_task(self, serv_obj_id):
         """
@@ -71,7 +71,7 @@ class TaskGenerator:
                     logger.info(f"Отчёт добавлен в БД для задачи {kwargs['serv_obj_id']}: {result} Задача засыпает")
                     await asyncio.sleep(5 * 60)
                 else:
-                    logger.error(f"Отчёт не пришёл, задача засыпает")
+                    logger.error(f"Отчёт пуст, задача засыпает")
                     await asyncio.sleep(5 * 60)
 
 
@@ -107,7 +107,7 @@ class TaskGenerator:
                             logger.info(f"Отчёт добавлен в БД для задачи {kwargs['serv_obj_id']}: {result} Задача засыпает")
                             await asyncio.sleep(60)
                         else:
-                            logger.error(f"Отчёт не пришёл, задача засыпает")
+                            logger.error(f"Отчёт пуст, задача засыпает")
                             await asyncio.sleep(60)
 
 
@@ -137,7 +137,7 @@ class TaskGenerator:
                         logger.info(f"Отчёт добавлен в БД для задачи {kwargs['serv_obj_id']}: {result} Задача засыпает")
                         await asyncio.sleep(60 * 60 * 24)
                     else:
-                        logger.error(f"Отчёт не пришёл, задача засыпает")
+                        logger.error(f"Отчёт пуст, задача засыпает")
                         await asyncio.sleep(60 * 60 * 24)
 
             elif kwargs['service_counter'] == 3:  # Ежемесячный отчёт
@@ -166,7 +166,7 @@ class TaskGenerator:
                         logger.info(f"Отчёт добавлен в БД для задачи {kwargs['serv_obj_id']}: {result} Задача засыпает")
                         await asyncio.sleep(60 * 60 * 24)
                     else:
-                        logger.error(f"Отчёт не пришёл, задача засыпает")
+                        logger.error(f"Отчёт пуст, задача засыпает")
                         await asyncio.sleep(60 * 60 * 24)
 
         except Exception as e:
