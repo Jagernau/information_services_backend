@@ -57,8 +57,8 @@ class TaskGenerator:
                         processing_status=0,
                         monitoring_system=monitoring_sys_name,
                         object_name=obj_name,
-                        client_name=cl_data[0],
-                        it_name=cl_data[1],
+                        client_name=cl_data[0] if cl_data else None,
+                        it_name=cl_data[1] if cl_data else None,
                         necessary_treatment=kwargs['stealth_type'],
                         result=result,
                         login=kwargs['sys_login']
@@ -90,8 +90,8 @@ class TaskGenerator:
                             processing_status=0,
                             monitoring_system=monitoring_sys_name,
                             object_name=obj_name,
-                            client_name=cl_data[0],
-                            it_name=cl_data[1],
+                            client_name=cl_data.ca_name,
+                            it_name=cl_data.service_manager,
                             necessary_treatment=kwargs['stealth_type'],
                             result=result,
                             login=kwargs['sys_login']

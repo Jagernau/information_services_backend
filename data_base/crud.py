@@ -73,7 +73,7 @@ class CrudService:
     @staticmethod
     async def get_client_name(sys_login, sys_password):
         async for session in MysqlDatabaseTwo().get_session():
-            result = await session.execute(
+            query = (
                 select(
                     models_two.Contragent.ca_name,
                     models_two.Contragent.service_manager,
@@ -84,5 +84,6 @@ class CrudService:
                     models_two.LoginUser.password == sys_password
                 )
             )
-            item = result.scalars().first()
-            return [item[0], item[1]] if item else [None, None]  # Проверка на наличие объекта
+            result = await session.execute(query)
+            item = result.fetchone()
+            return item if item else None  # Проверка на наличие объекта
