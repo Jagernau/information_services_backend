@@ -4,6 +4,7 @@ import time
 from threading import Thread, Event
 from subprocess import call
 import sys
+import random
 
 sys.path.append('../')
 from information_services_backend.my_logger import logger
@@ -27,6 +28,9 @@ class TaskGenerator:
 
     def get_unic_all_tasks(self):
         return set(self.task_registry.keys())
+
+    def gen_random_num(self):
+        return random.uniform(1.2, 3.7)
 
     def stop_task(self, serv_obj_id):
         """
@@ -57,11 +61,12 @@ class TaskGenerator:
         if service_counter == 0:
             # выполнять отчёт с интервалом через 5 минут
             logger.info(f"Начался выполнятся мгновенный отчёт для задачи {serv_obj_id}")
-            result = " "
+            result = None
             try:
                 if monitoring_sys == 1:
                     glonas_report = GlonassReport(str(sys_login), str(sys_password), GLONASS_BASED_ADRESS)
                     if info_obj_serv_id == 2:
+                        time.sleep(random.uniform(0.9, 1.8))
                         result = glonas_report.get_now_serv_fuel_up_down(sys_id_obj)
                         logger.info(f"Отчёт по {serv_obj_id} {result}")
 
@@ -69,33 +74,36 @@ class TaskGenerator:
                 logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {serv_obj_id} {e}")
             else:
                 try:
-                    from information_services_backend.data_base import crud
+                    if result:
+                        from information_services_backend.data_base import crud
 
-                    monitoring_sys_name = crud.get_sys_mon_name(monitoring_sys)
-                    obj_name = crud.get_obj_name(serv_obj_sys_mon_id)
-                    cl_data = crud.get_client_name(sys_login,sys_password)
-                    crud.add_report_to_three(
-                            time_event=now_time,
-                            id_serv_subscription=serv_obj_id, # 'ID подписки'
-                            processing_status=0, # 'Статус обработки'
-                            monitoring_system=monitoring_sys_name, # 'Система мониторинга' --- -
-                            object_name=obj_name, # 'Имя объекта мониторинга' --- -
-                            client_name=cl_data[0], # 'Имя клиента' --- - 
-                            it_name=cl_data[1], # 'Имя фамилия ИТ специалиста' ---
-                            necessary_treatment=stealth_type, # 'Нужна ли обработка IT специали'
-                            result=result,
-                            login=sys_login
-                    )
-                    logger.info(f"Отчёт отправился в БД_3 {serv_obj_id} {result} программа засыпает")
+                        monitoring_sys_name = crud.get_sys_mon_name(monitoring_sys)
+                        obj_name = crud.get_obj_name(serv_obj_sys_mon_id)
+                        cl_data = crud.get_client_name(sys_login,sys_password)
+                        crud.add_report_to_three(
+                                time_event=now_time,
+                                id_serv_subscription=serv_obj_id,
+                                processing_status=0,
+                                monitoring_system=monitoring_sys_name,
+                                object_name=obj_name,
+                                client_name=cl_data[0],
+                                it_name=cl_data[1],
+                                necessary_treatment=stealth_type,
+                                result=result,
+                                login=sys_login
+                        )
+                        logger.info(f"Отчёт отправился в БД_3 {serv_obj_id} {result} программа засыпает")
 
                 except Exception as e:
                     logger.error(f"НЕ удалось отправить данные в БД {serv_obj_id} {e}")
 
             finally:
+                logger.info(f"Программа засыпает {serv_obj_id}")
                 time.sleep(300)
 
 
         elif service_counter == 1:
+            result = None
             # выполнять отчёт каждый день в 09:00-09:05
             if now_time.hour == 9 and now_time.minute in range(0, 6):
                 logger.info(f"Выполняется ежедневный отчёт для задачи {serv_obj_id}")
@@ -103,33 +111,140 @@ class TaskGenerator:
                     glonas_report = GlonassReport(str(sys_login), str(sys_password), GLONASS_BASED_ADRESS)
                     try:
                         if info_obj_serv_id == 3: # информация по расходу за предыдущий день
+                            time.sleep(random.uniform(0.9, 1.8))
                             result = glonas_report.get_yest_serv_fuel_flow(sys_id_obj)
-                            logger.info(f"Отчёт по {serv_obj_id} {result}, программа засыпает")
+                            logger.info(f"Отчёт по {serv_obj_id} {result}")
 
                         if info_obj_serv_id == 2: # информация по сливам и заправкам за предыдущий день
+                            time.sleep(random.uniform(0.9, 1.8))
                             result = glonas_report.get_yest_serv_fuel_up_down(sys_id_obj)
-                            logger.info(f"Отчёт по {serv_obj_id} {result}, программа засыпает")
+                            logger.info(f"Отчёт по {serv_obj_id} {result}")
 
                     except Exception as e:
                         logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {serv_obj_id} {e}")
                 # Здесь можно добавить код для выполнения отчета
-                time.sleep(60)  # Ждем минуту, чтобы не выполнять отчет несколько раз в течение одной минуты
+                    else:
+                        try:
+                            if result:
+                                from information_services_backend.data_base import crud
+
+                                monitoring_sys_name = crud.get_sys_mon_name(monitoring_sys)
+                                obj_name = crud.get_obj_name(serv_obj_sys_mon_id)
+                                cl_data = crud.get_client_name(sys_login,sys_password)
+                                crud.add_report_to_three(
+                                        time_event=now_time,
+                                        id_serv_subscription=serv_obj_id,
+                                        processing_status=0,
+                                        monitoring_system=monitoring_sys_name,
+                                        object_name=obj_name,
+                                        client_name=cl_data[0],
+                                        it_name=cl_data[1],
+                                        necessary_treatment=stealth_type,
+                                        result=result,
+                                        login=sys_login
+                                )
+                                logger.info(f"Отчёт отправился в БД_3 {serv_obj_id} {result} программа засыпает")
+
+                        except Exception as e:
+                            logger.error(f"НЕ удалось отправить данные в БД {serv_obj_id} {e}")
+                    finally:
+                        time.sleep(60)  # Ждем минуту, чтобы не выполнять отчет несколько раз в течение одной минуты
             
         elif service_counter == 2:
+            result = None
             # выполнять отчёт раз в неделю по понедельникам
             if now_time.weekday() == 0 and now_time.hour == 0 and now_time.minute == 0:
                 logger.info(f"Выполняется еженедельный отчёт для задачи {serv_obj_id}")
+                if monitoring_sys == 1:
+                    glonas_report = GlonassReport(str(sys_login), str(sys_password), GLONASS_BASED_ADRESS)
+                    try:
+                        if info_obj_serv_id == 3: # информация по расходу за предыдущий день
+                            time.sleep(random.uniform(0.9, 1.8))
+                            result = glonas_report.get_yest_serv_fuel_flow(sys_id_obj)
+                            logger.info(f"Отчёт по {serv_obj_id} {result}")
 
+                        if info_obj_serv_id == 2: # информация по сливам и заправкам за предыдущий день
+                            time.sleep(random.uniform(0.9, 1.8))
+                            result = glonas_report.get_yest_serv_fuel_up_down(sys_id_obj)
+                            logger.info(f"Отчёт по {serv_obj_id} {result}")
+
+                    except Exception as e:
+                        logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {serv_obj_id} {e}")
                 # Здесь можно добавить код для выполнения отчета
-                time.sleep(60 * 60 * 24)  # Ждем сутки, чтобы не выполнять отчет несколько раз в течение недели
+                    else:
+                        try:
+                            if result:
+                                from information_services_backend.data_base import crud
+
+                                monitoring_sys_name = crud.get_sys_mon_name(monitoring_sys)
+                                obj_name = crud.get_obj_name(serv_obj_sys_mon_id)
+                                cl_data = crud.get_client_name(sys_login,sys_password)
+                                crud.add_report_to_three(
+                                        time_event=now_time,
+                                        id_serv_subscription=serv_obj_id,
+                                        processing_status=0,
+                                        monitoring_system=monitoring_sys_name,
+                                        object_name=obj_name,
+                                        client_name=cl_data[0],
+                                        it_name=cl_data[1],
+                                        necessary_treatment=stealth_type,
+                                        result=result,
+                                        login=sys_login
+                                )
+                                logger.info(f"Отчёт отправился в БД_3 {serv_obj_id} {result} программа засыпает")
+
+                        except Exception as e:
+                            logger.error(f"НЕ удалось отправить данные в БД {serv_obj_id} {e}")
+                    finally:
+                        time.sleep(60 * 60 * 24)  # Ждем сутки, чтобы не выполнять отчет несколько раз в течение недели
 
         elif service_counter == 3:
+            result = None
             # выполнять отчёт раз в месяц каждого первого числа
             if now_time.day == 1 and now_time.hour == 0 and now_time.minute == 0:
                 logger.info(f"Выполняется ежемесячный отчёт для задачи {serv_obj_id}")
+                if monitoring_sys == 1:
+                    glonas_report = GlonassReport(str(sys_login), str(sys_password), GLONASS_BASED_ADRESS)
+                    try:
+                        if info_obj_serv_id == 3: # информация по расходу за предыдущий день
+                            time.sleep(random.uniform(0.9, 1.8))
+                            result = glonas_report.get_yest_serv_fuel_flow(sys_id_obj)
+                            logger.info(f"Отчёт по {serv_obj_id} {result}")
 
+                        if info_obj_serv_id == 2: # информация по сливам и заправкам за предыдущий день
+                            time.sleep(random.uniform(0.9, 1.8))
+                            result = glonas_report.get_yest_serv_fuel_up_down(sys_id_obj)
+                            logger.info(f"Отчёт по {serv_obj_id} {result}")
+
+                    except Exception as e:
+                        logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {serv_obj_id} {e}")
                 # Здесь можно добавить код для выполнения отчета
-                time.sleep(60 * 60 * 24)  # Ждем сутки, чтобы не выполнять отчет несколько раз в течение месяца
+                    else:
+                        try:
+                            if result:
+                                from information_services_backend.data_base import crud
+
+                                monitoring_sys_name = crud.get_sys_mon_name(monitoring_sys)
+                                obj_name = crud.get_obj_name(serv_obj_sys_mon_id)
+                                cl_data = crud.get_client_name(sys_login,sys_password)
+                                crud.add_report_to_three(
+                                        time_event=now_time,
+                                        id_serv_subscription=serv_obj_id,
+                                        processing_status=0,
+                                        monitoring_system=monitoring_sys_name,
+                                        object_name=obj_name,
+                                        client_name=cl_data[0],
+                                        it_name=cl_data[1],
+                                        necessary_treatment=stealth_type,
+                                        result=result,
+                                        login=sys_login
+                                )
+                                logger.info(f"Отчёт отправился в БД_3 {serv_obj_id} {result} программа засыпает")
+
+                        except Exception as e:
+                            logger.error(f"НЕ удалось отправить данные в БД {serv_obj_id} {e}")
+                    finally:
+                        time.sleep(60 * 60 * 24)  # Ждем сутки, чтобы не выполнять отчет несколько раз в течение недели
 
     def starter_task(self, **kwargs):
         """
@@ -146,7 +261,7 @@ class TaskGenerator:
                 subscription_end = kwargs['subscription_end']
 
                 if subscription_start < now_time < subscription_end:
-                    logger.info(f"Задача {serv_obj_id} работает, текущее время: {now_time}")
+                    # logger.info(f"Задача {serv_obj_id} работает, текущее время: {now_time}")
                     self.make_report(now_time=now_time, **kwargs)
                 else:
                     logger.info(f"Задача {serv_obj_id} завершена или вышла за границы времени.")

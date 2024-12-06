@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta, date
 
+import sys
+sys.path.append('../')
+from information_services.my_logger import logger
 
 class GlonassReport:
     """
@@ -44,6 +47,7 @@ class GlonassReport:
             result = f"Отчёт по расходу\nТС - {name}\nОтчёт {yest_start} - {yest_end}\nНачальный уровень - {start_val}\nКонечный уровень - {end_val}\nПолный расход - {all_exp}\nРасход в движении - {move_exp}"
             return result
         except:
+            logger.error(f"Не получен отчёт расход по топливу")
             return None
 
     def get_yest_serv_fuel_up_down(self, obj_id):
@@ -67,13 +71,14 @@ class GlonassReport:
                     yest_end
                     )
         except:
+            logger.error(f"Не получен отчёт по сливам и заправкам")
             return None
         else:
             name = expen_data[0]["name"]
             fuels = expen_data[0]["fuels"] if len(expen_data[0]["fuels"]) >= 1 else None
             result = f"Отчёт по заправкам и сливам ТС - {name}\n"
             if fuels == None:
-                return f"По ТС {name} Сливов и заправок не было за периуд {yest_start} - {yest_end}"
+                return None
             else:
                 fuelsUp_list = [i for i in fuels if i["event"] == "FuelIn"]
                 fuelsUps = fuelsUp_list if len(fuelsUp_list) >= 1 else None
@@ -82,7 +87,7 @@ class GlonassReport:
                 fuelsOuts = fuelsOut_list if len(fuelsOut_list) >= 1 else None
 
                 if fuelsUps == None and fuelsOuts == None:
-                    return "Заправок и Сливов не было"
+                    return None
 
                 if fuelsUps != None and fuelsOuts == None:
                     for i in fuelsUps:
@@ -129,7 +134,7 @@ class GlonassReport:
             fuels = expen_data[0]["fuels"] if len(expen_data[0]["fuels"]) >= 1 else None
             result = f"Отчёт по заправкам и сливам ТС - {name}\n"
             if fuels == None:
-                return f"По ТС {name} Сливов и заправок не было за периуд {start} - {end}"
+                return None
             else:
                 fuelsUp_list = [i for i in fuels if i["event"] == "FuelIn"]
                 fuelsUps = fuelsUp_list if len(fuelsUp_list) >= 1 else None
@@ -138,7 +143,7 @@ class GlonassReport:
                 fuelsOuts = fuelsOut_list if len(fuelsOut_list) >= 1 else None
 
                 if fuelsUps == None and fuelsOuts == None:
-                    return "Заправок и Сливов не было"
+                    return None
 
                 if fuelsUps != None and fuelsOuts == None:
                     for i in fuelsUps:

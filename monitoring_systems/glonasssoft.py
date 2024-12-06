@@ -5,7 +5,9 @@ import time
 import sys
 sys.path.append('../')
 from information_services import config
+from information_services.my_logger import logger
 
+import random
 # login = config.GLONASS_LOGIN # логин клиента
 # password = config.GLONASS_PASS # логин клиента
 # based_adres=str(config.GLONASS_BASED_ADRESS)
@@ -19,9 +21,12 @@ class Glonasssoft:
         self.password = password
         self.based_adres = based_adres
 
+    def gen_random_num(self):
+        return random.uniform(1.2, 3.7)
+
     def token(self):
         """Получение Токена Глонассофт"""
-        time.sleep(1)
+        time.sleep(self.gen_random_num())
         url = f'{self.based_adres}v3/auth/login'
         data = {'login': self.login, 'password': self.password}
         headers = {'Content-type': 'application/json', 'accept': 'json'}
@@ -29,7 +34,14 @@ class Glonasssoft:
         if response.status_code == 200:
             return response.json()["AuthId"]
         else:
-            return None
+            time.sleep(self.gen_random_num())
+            response = requests.post(url, data=json.dumps(data), headers=headers)
+            if response.status_code == 200:
+                return response.json()["AuthId"]
+            else:
+                logger.info(f"Не получен ТОКЕН")
+                return None
+
 
     def _get_request(self, url, token):
         """Универсальный метод для выполнения GET-запросов"""
@@ -38,11 +50,18 @@ class Glonasssoft:
             'Content-type': 'application/json',
             'Accept': 'application/json'
         }
+        time.sleep(self.gen_random_num())
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             return response.json()
         else:
-            return None
+            time.sleep(self.gen_random_num())
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logger.info(f"Не получен GET")
+                return None
 
     def _post_request(self, url, token, data: dict):
         """Универсальный метод для выполнения POST """
@@ -51,24 +70,31 @@ class Glonasssoft:
             'Content-type': 'application/json',
             'Accept': 'application/json'
         }
+        time.sleep(self.gen_random_num())
         response = requests.post(url, headers=headers, data=json.dumps(data))
         if response.status_code == 200:
             return response.json()
         else:
-            raise Exception(response.text)
+            time.sleep(self.gen_random_num())
+            response = requests.post(url, headers=headers, data=json.dumps(data))
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logger.info(f"Не получен POST")
+                return None
 
     def get_all_vehicles_old(self, token: str):
         """
         Метод получения всех объектов glonasssoft
         """
-        time.sleep(1)
+        time.sleep(self.gen_random_num())
         return self._get_request(f"{self.based_adres}vehicles/", token)
 
     def get_expense(self, token, obj_id, start, end):
         """
         Метод получения расхода ТС
         """
-        time.sleep(1)
+        time.sleep(self.gen_random_num())
         data = {
                 "vehicleIds": [obj_id,],
                 "from": str(start),
@@ -80,7 +106,7 @@ class Glonasssoft:
         """
         Метод получения сливов заправок
         """
-        time.sleep(1)
+        time.sleep(self.gen_random_num())
         data = {
                 "vehicleIds": [obj_id,],
                 "from": str(start),

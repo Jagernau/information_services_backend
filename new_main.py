@@ -33,4 +33,4 @@ while True:
         for task_id in tasks_to_stop:
             task_generator.stop_task(task_id)
 
-    time.sleep(20)
+    time.sleep(600)
