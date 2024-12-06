@@ -39,7 +39,7 @@ async def main():
             for task_id in tasks_to_stop:
                 await task_generator.stop_task(task_id)
 
-        await asyncio.sleep(20)
+        await asyncio.sleep(600)
 
 
 if __name__ == "__main__":
