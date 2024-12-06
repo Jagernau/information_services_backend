@@ -1,4 +1,5 @@
 # generating_reports/glonass_reports.py
+import asyncio
 from datetime import datetime, timedelta
 from monitoring_systems.glonasssoft import Glonasssoft
 import sys
@@ -12,7 +13,7 @@ class GlonassReport:
     def __init__(self, login: str, password: str, based_adress: str):
         self.glonass_client = Glonasssoft(login, password, based_adress)
 
-    async def get_yest_serv_fuel_flow(self, obj_id: int) -> str:
+    async def get_yest_serv_fuel_flow(self, obj_id: int):
         """
         Отчёт по расходу топлива за предыдущий день.
         """
@@ -23,13 +24,15 @@ class GlonassReport:
         yest_end = yesterday.strftime("%Y-%m-%dT23:59")
 
         try:
+            await asyncio.sleep(1)
             token = await self.glonass_client.token()
             if not token:
                 return "Не удалось получить токен."
 
+            await asyncio.sleep(1)
             data = await self.glonass_client.get_expense(token, obj_id, yest_start, yest_end)
             if not data:
-                return "Не удалось получить данные о расходе топлива."
+                return None
 
             name = data[0]["name"]
             start_val = data[0]["periods"][0]["fuelLevelStart"]
@@ -45,9 +48,9 @@ class GlonassReport:
             )
         except Exception as e:
             logger.error(f"ошибка получения данных {e}")
-            return f"Ошибка при получении отчёта: {e}"
+            return None
 
-    async def get_yest_serv_fuel_up_down(self, obj_id: int) -> str:
+    async def get_yest_serv_fuel_up_down(self, obj_id: int):
         """
         Отчёт по сливам и заправкам за предыдущий день.
         """
@@ -58,10 +61,12 @@ class GlonassReport:
         yest_end = yesterday.strftime("%Y-%m-%dT23:59")
 
         try:
+            await asyncio.sleep(1)
             token = await self.glonass_client.token()
             if not token:
                 return "Не удалось получить токен."
 
+            await asyncio.sleep(1)
             data = await self.glonass_client.get_refuel(token, obj_id, yest_start, yest_end)
             if not data:
                 return "Не удалось получить данные о заправках и сливах."
@@ -69,7 +74,8 @@ class GlonassReport:
             name = data[0]["name"]
             fuels = data[0].get("fuels", [])
             if not fuels:
-                return f"По ТС {name} заправок и сливов не было за период {yest_start} - {yest_end}."
+                return None
+                #return f"По ТС {name} заправок и сливов не было за период {yest_start} - {yest_end}."
 
             result = f"Отчёт по заправкам и сливам ТС - {name}\n"
             for fuel in fuels:
@@ -86,7 +92,7 @@ class GlonassReport:
             return result
         except Exception as e:
             logger.error(f"ошибка получения данных {e}")
-            return f"Ошибка при получении отчёта: {e}"
+            return None
 
     async def get_now_serv_fuel_up_down(self, obj_id):
         """
@@ -101,7 +107,9 @@ class GlonassReport:
         start = today_now.strftime("%Y-%m-%dT%H:%M:%S")
         end = tuday_count.strftime("%Y-%m-%dT%H:%M:%S")
         try:
+            await asyncio.sleep(1)
             glonass_token = await self.glonass_client.token()
+            await asyncio.sleep(1)
             expen_data = await self.glonass_client.get_refuel(
                     glonass_token,
                     obj_id,
@@ -125,7 +133,7 @@ class GlonassReport:
                 fuelsOuts = fuelsOut_list if len(fuelsOut_list) >= 1 else None
 
                 if fuelsUps == None and fuelsOuts == None:
-                    return "Заправок и Сливов не было"
+                    return None
 
                 if fuelsUps != None and fuelsOuts == None:
                     for i in fuelsUps:
