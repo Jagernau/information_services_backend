@@ -124,7 +124,7 @@ class GlonassReport:
             fuels = expen_data[0]["fuels"] if len(expen_data[0]["fuels"]) >= 1 else None
             result = f"Отчёт по заправкам и сливам ТС - {name}\n"
             if fuels == None:
-                return f"По ТС {name} Сливов и заправок не было за периуд {start} - {end}"
+                return None
             else:
                 fuelsUp_list = [i for i in fuels if i["event"] == "FuelIn"]
                 fuelsUps = fuelsUp_list if len(fuelsUp_list) >= 1 else None

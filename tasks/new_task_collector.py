@@ -192,6 +192,7 @@ class TaskGenerator:
 
                 if subscription_start < now_time < subscription_end:
                     #logger.info(f"Задача {serv_obj_id} активна: текущее время {now_time}")
+                    await asyncio.sleep(await self.gen_random_num())
                     await self._make_report(**kwargs)
                 else:
                     logger.info(f"Задача {serv_obj_id} завершена по времени.")
