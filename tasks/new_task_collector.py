@@ -43,206 +43,130 @@ class TaskGenerator:
             del self.task_registry[serv_obj_id]
             logger.info(f"Задача {serv_obj_id} остановлена.")
 
+    def save_data_db_three(self, result, now_time, **kwargs):
+        try:
+            from information_services_backend.data_base import crud
+            monitoring_sys_name = crud.get_sys_mon_name(kwargs['monitoring_sys'])
+            obj_name = crud.get_obj_name(kwargs['serv_obj_sys_mon_id'])
+            cl_data = crud.get_client_name(kwargs['sys_login'],kwargs['sys_password'])
+            crud.add_report_to_three(
+                    time_event=now_time,
+                    id_serv_subscription=kwargs['serv_obj_id'],
+                    processing_status=0,
+                    monitoring_system=monitoring_sys_name,
+                    object_name=obj_name,
+                    client_name=cl_data[0],
+                    it_name=cl_data[1],
+                    necessary_treatment=kwargs['stealth_type'],
+                    result=result,
+                    login=kwargs['sys_login']
+            )
+            logger.info(f"Отчёт отправился в БД_3 {kwargs['serv_obj_id']} {result} программа засыпает")
+        except Exception as e:
+            logger.error(f"НЕ удалось отправить данные в БД {kwargs['serv_obj_id']} {e}")
+
+
     def make_report(self, *args, **kwargs):
         """
         Реализация make_report как есть.
         """
         now_time = self._get_now_time()
-        serv_obj_id = kwargs['serv_obj_id']
-        service_counter = kwargs['service_counter']
-        monitoring_sys = kwargs['monitoring_sys']
-        info_obj_serv_id = kwargs['info_obj_serv_id']
-        sys_login = kwargs['sys_login']
-        sys_password = kwargs['sys_password']
-        sys_id_obj = kwargs['sys_id_obj']
-        stealth_type = kwargs['stealth_type']
-        serv_obj_sys_mon_id = kwargs['serv_obj_sys_mon_id']
-
-        if service_counter == 0:
+        if kwargs["service_counter"] == 0:
             # выполнять отчёт с интервалом через 5 минут
-            logger.info(f"Начался выполнятся мгновенный отчёт для задачи {serv_obj_id}")
+            logger.info(f"Начался выполнятся мгновенный отчёт для задачи {kwargs['serv_obj_id']}")
             result = None
             try:
-                if monitoring_sys == 1:
-                    glonas_report = GlonassReport(str(sys_login), str(sys_password), GLONASS_BASED_ADRESS)
-                    if info_obj_serv_id == 2:
+                if kwargs["monitoring_sys"] == 1:
+                    glonas_report = GlonassReport(kwargs["sys_login"], kwargs["sys_password"], GLONASS_BASED_ADRESS)
+                    if kwargs['info_obj_serv_id'] == 2:
                         time.sleep(random.uniform(0.9, 1.8))
-                        result = glonas_report.get_now_serv_fuel_up_down(sys_id_obj)
-                        logger.info(f"Отчёт по {serv_obj_id} {result}")
-
+                        result = glonas_report.get_now_serv_fuel_up_down(kwargs["sys_id_obj"])
+                        logger.info(f"Отчёт по {kwargs['serv_obj_id']} {result}")
             except Exception as e:
-                logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {serv_obj_id} {e}")
+                logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {kwargs['serv_obj_id']} {e}")
             else:
-                try:
-                    if result:
-                        from information_services_backend.data_base import crud
-
-                        monitoring_sys_name = crud.get_sys_mon_name(monitoring_sys)
-                        obj_name = crud.get_obj_name(serv_obj_sys_mon_id)
-                        cl_data = crud.get_client_name(sys_login,sys_password)
-                        crud.add_report_to_three(
-                                time_event=now_time,
-                                id_serv_subscription=serv_obj_id,
-                                processing_status=0,
-                                monitoring_system=monitoring_sys_name,
-                                object_name=obj_name,
-                                client_name=cl_data[0],
-                                it_name=cl_data[1],
-                                necessary_treatment=stealth_type,
-                                result=result,
-                                login=sys_login
-                        )
-                        logger.info(f"Отчёт отправился в БД_3 {serv_obj_id} {result} программа засыпает")
-
-                except Exception as e:
-                    logger.error(f"НЕ удалось отправить данные в БД {serv_obj_id} {e}")
-
+                if result:
+                    self.save_data_db_three(result, now_time, **kwargs)
             finally:
-                logger.info(f"Программа засыпает {serv_obj_id}")
+                logger.info(f"Программа засыпает {kwargs['serv_obj_id']}")
                 time.sleep(300)
 
-
-        elif service_counter == 1:
+        elif kwargs['service_counter'] == 1:
             result = None
             # выполнять отчёт каждый день в 09:00-09:05
             if now_time.hour == 9 and now_time.minute in range(0, 6):
-                logger.info(f"Выполняется ежедневный отчёт для задачи {serv_obj_id}")
-                if monitoring_sys == 1:
-                    glonas_report = GlonassReport(str(sys_login), str(sys_password), GLONASS_BASED_ADRESS)
+                logger.info(f"Выполняется ежедневный отчёт для задачи {kwargs['serv_obj_id']}")
+                if kwargs['monitoring_sys'] == 1:
+                    glonas_report = GlonassReport(kwargs['sys_login'],kwargs['sys_password'], GLONASS_BASED_ADRESS)
                     try:
-                        if info_obj_serv_id == 3: # информация по расходу за предыдущий день
+                        if kwargs['info_obj_serv_id'] == 3: # информация по расходу за предыдущий день
                             time.sleep(random.uniform(0.9, 1.8))
-                            result = glonas_report.get_yest_serv_fuel_flow(sys_id_obj)
-                            logger.info(f"Отчёт по {serv_obj_id} {result}")
+                            result = glonas_report.get_yest_serv_fuel_flow(kwargs['sys_id_obj'])
+                            logger.info(f"Отчёт по {kwargs['serv_obj_id']} {result}")
 
-                        if info_obj_serv_id == 2: # информация по сливам и заправкам за предыдущий день
+                        if kwargs['info_obj_serv_id'] == 2: # информация по сливам и заправкам за предыдущий день
                             time.sleep(random.uniform(0.9, 1.8))
-                            result = glonas_report.get_yest_serv_fuel_up_down(sys_id_obj)
-                            logger.info(f"Отчёт по {serv_obj_id} {result}")
+                            result = glonas_report.get_yest_serv_fuel_up_down(kwargs['sys_id_obj'])
+                            logger.info(f"Отчёт по {kwargs['serv_obj_id']} {result}")
 
                     except Exception as e:
-                        logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {serv_obj_id} {e}")
+                        logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {kwargs['serv_obj_id']} {e}")
                 # Здесь можно добавить код для выполнения отчета
                     else:
-                        try:
-                            if result:
-                                from information_services_backend.data_base import crud
-
-                                monitoring_sys_name = crud.get_sys_mon_name(monitoring_sys)
-                                obj_name = crud.get_obj_name(serv_obj_sys_mon_id)
-                                cl_data = crud.get_client_name(sys_login,sys_password)
-                                crud.add_report_to_three(
-                                        time_event=now_time,
-                                        id_serv_subscription=serv_obj_id,
-                                        processing_status=0,
-                                        monitoring_system=monitoring_sys_name,
-                                        object_name=obj_name,
-                                        client_name=cl_data[0],
-                                        it_name=cl_data[1],
-                                        necessary_treatment=stealth_type,
-                                        result=result,
-                                        login=sys_login
-                                )
-                                logger.info(f"Отчёт отправился в БД_3 {serv_obj_id} {result} программа засыпает")
-
-                        except Exception as e:
-                            logger.error(f"НЕ удалось отправить данные в БД {serv_obj_id} {e}")
+                        if result:
+                            self.save_data_db_three(result, now_time, **kwargs)
                     finally:
                         time.sleep(60)  # Ждем минуту, чтобы не выполнять отчет несколько раз в течение одной минуты
             
-        elif service_counter == 2:
+        elif kwargs['service_counter'] == 2:
             result = None
             # выполнять отчёт раз в неделю по понедельникам
             if now_time.weekday() == 0 and now_time.hour == 0 and now_time.minute == 0:
-                logger.info(f"Выполняется еженедельный отчёт для задачи {serv_obj_id}")
-                if monitoring_sys == 1:
-                    glonas_report = GlonassReport(str(sys_login), str(sys_password), GLONASS_BASED_ADRESS)
+                logger.info(f"Выполняется еженедельный отчёт для задачи {kwargs['serv_obj_id']}")
+                if kwargs['monitoring_sys'] == 1:
+                    glonas_report = GlonassReport(kwargs['sys_login'], kwargs['sys_password'], GLONASS_BASED_ADRESS)
                     try:
-                        if info_obj_serv_id == 3: # информация по расходу за предыдущий день
+                        if kwargs['info_obj_serv_id'] == 3: # информация по расходу за предыдущий день
                             time.sleep(random.uniform(0.9, 1.8))
-                            result = glonas_report.get_yest_serv_fuel_flow(sys_id_obj)
-                            logger.info(f"Отчёт по {serv_obj_id} {result}")
-
-                        if info_obj_serv_id == 2: # информация по сливам и заправкам за предыдущий день
+                            result = glonas_report.get_yest_serv_fuel_flow(kwargs['sys_id_obj'])
+                            logger.info(f"Отчёт по {kwargs['serv_obj_id']} {result}")
+                        if kwargs['info_obj_serv_id'] == 2: # информация по сливам и заправкам за предыдущий день
                             time.sleep(random.uniform(0.9, 1.8))
-                            result = glonas_report.get_yest_serv_fuel_up_down(sys_id_obj)
-                            logger.info(f"Отчёт по {serv_obj_id} {result}")
-
+                            result = glonas_report.get_yest_serv_fuel_up_down(kwargs['sys_id_obj'])
+                            logger.info(f"Отчёт по {kwargs['serv_obj_id']} {result}")
                     except Exception as e:
-                        logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {serv_obj_id} {e}")
+                        logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {kwargs['serv_obj_id']} {e}")
                 # Здесь можно добавить код для выполнения отчета
                     else:
-                        try:
-                            if result:
-                                from information_services_backend.data_base import crud
-
-                                monitoring_sys_name = crud.get_sys_mon_name(monitoring_sys)
-                                obj_name = crud.get_obj_name(serv_obj_sys_mon_id)
-                                cl_data = crud.get_client_name(sys_login,sys_password)
-                                crud.add_report_to_three(
-                                        time_event=now_time,
-                                        id_serv_subscription=serv_obj_id,
-                                        processing_status=0,
-                                        monitoring_system=monitoring_sys_name,
-                                        object_name=obj_name,
-                                        client_name=cl_data[0],
-                                        it_name=cl_data[1],
-                                        necessary_treatment=stealth_type,
-                                        result=result,
-                                        login=sys_login
-                                )
-                                logger.info(f"Отчёт отправился в БД_3 {serv_obj_id} {result} программа засыпает")
-
-                        except Exception as e:
-                            logger.error(f"НЕ удалось отправить данные в БД {serv_obj_id} {e}")
+                        if result:
+                            self.save_data_db_three(result, now_time, **kwargs)
                     finally:
                         time.sleep(60 * 60 * 24)  # Ждем сутки, чтобы не выполнять отчет несколько раз в течение недели
 
-        elif service_counter == 3:
+        elif kwargs['service_counter'] == 3:
             result = None
             # выполнять отчёт раз в месяц каждого первого числа
             if now_time.day == 1 and now_time.hour == 0 and now_time.minute == 0:
-                logger.info(f"Выполняется ежемесячный отчёт для задачи {serv_obj_id}")
-                if monitoring_sys == 1:
-                    glonas_report = GlonassReport(str(sys_login), str(sys_password), GLONASS_BASED_ADRESS)
+                logger.info(f"Выполняется ежемесячный отчёт для задачи {kwargs['serv_obj_id']}")
+                if kwargs['monitoring_sys'] == 1:
+                    glonas_report = GlonassReport(kwargs['sys_login'], kwargs['sys_password'], GLONASS_BASED_ADRESS)
                     try:
-                        if info_obj_serv_id == 3: # информация по расходу за предыдущий день
+                        if kwargs['info_obj_serv_id'] == 3: # информация по расходу за предыдущий день
                             time.sleep(random.uniform(0.9, 1.8))
-                            result = glonas_report.get_yest_serv_fuel_flow(sys_id_obj)
-                            logger.info(f"Отчёт по {serv_obj_id} {result}")
+                            result = glonas_report.get_yest_serv_fuel_flow(kwargs['sys_id_obj'])
+                            logger.info(f"Отчёт по {kwargs['serv_obj_id']} {result}")
 
-                        if info_obj_serv_id == 2: # информация по сливам и заправкам за предыдущий день
+                        if kwargs['info_obj_serv_id'] == 2: # информация по сливам и заправкам за предыдущий день
                             time.sleep(random.uniform(0.9, 1.8))
-                            result = glonas_report.get_yest_serv_fuel_up_down(sys_id_obj)
-                            logger.info(f"Отчёт по {serv_obj_id} {result}")
+                            result = glonas_report.get_yest_serv_fuel_up_down(kwargs['sys_id_obj'])
+                            logger.info(f"Отчёт по {kwargs['serv_obj_id']} {result}")
 
                     except Exception as e:
-                        logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {serv_obj_id} {e}")
+                        logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {kwargs['serv_obj_id']} {e}")
                 # Здесь можно добавить код для выполнения отчета
                     else:
-                        try:
-                            if result:
-                                from information_services_backend.data_base import crud
-
-                                monitoring_sys_name = crud.get_sys_mon_name(monitoring_sys)
-                                obj_name = crud.get_obj_name(serv_obj_sys_mon_id)
-                                cl_data = crud.get_client_name(sys_login,sys_password)
-                                crud.add_report_to_three(
-                                        time_event=now_time,
-                                        id_serv_subscription=serv_obj_id,
-                                        processing_status=0,
-                                        monitoring_system=monitoring_sys_name,
-                                        object_name=obj_name,
-                                        client_name=cl_data[0],
-                                        it_name=cl_data[1],
-                                        necessary_treatment=stealth_type,
-                                        result=result,
-                                        login=sys_login
-                                )
-                                logger.info(f"Отчёт отправился в БД_3 {serv_obj_id} {result} программа засыпает")
-
-                        except Exception as e:
-                            logger.error(f"НЕ удалось отправить данные в БД {serv_obj_id} {e}")
+                        if result:
+                            self.save_data_db_three(result, now_time, **kwargs)
                     finally:
                         time.sleep(60 * 60 * 24)  # Ждем сутки, чтобы не выполнять отчет несколько раз в течение недели
 
