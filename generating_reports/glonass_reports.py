@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, date
 
 import sys
 sys.path.append('../')
-from information_services.my_logger import logger
+from information_services_backend.my_logger import logger
 
 class GlonassReport:
     """
@@ -70,14 +70,17 @@ class GlonassReport:
                     yest_start,
                     yest_end
                     )
-        except:
-            logger.error(f"Не получен отчёт по сливам и заправкам")
+        except Exception as e:
+            logger.error(f"Не получен отчёт по сливам и заправкам get_yest_serv_fuel_up_down {e}")
             return None
         else:
+            if len(expen_data) == 0:
+                return None
             name = expen_data[0]["name"]
             fuels = expen_data[0]["fuels"] if len(expen_data[0]["fuels"]) >= 1 else None
             result = f"Отчёт по заправкам и сливам ТС - {name}\n"
             if fuels == None:
+                logger.error(f"Нет двидения топлива get_yest_serv_fuel_up_down")
                 return None
             else:
                 fuelsUp_list = [i for i in fuels if i["event"] == "FuelIn"]
@@ -127,13 +130,17 @@ class GlonassReport:
                     start,
                     end
                     )
-        except:
+        except Exception as e:
+            logger.error(f"Не удаётсся получить отчёт в get_now_serv_fuel_up_down {e}")
             return None
         else:
+            if len(expen_data) == 0:
+                return None
             name = expen_data[0]["name"]
             fuels = expen_data[0]["fuels"] if len(expen_data[0]["fuels"]) >= 1 else None
             result = f"Отчёт по заправкам и сливам ТС - {name}\n"
             if fuels == None:
+                logger.error(f"Нет движения топлива get_yest_serv_fuel_up_down")
                 return None
             else:
                 fuelsUp_list = [i for i in fuels if i["event"] == "FuelIn"]

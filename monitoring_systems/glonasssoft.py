@@ -4,13 +4,9 @@ import time
 
 import sys
 sys.path.append('../')
-from information_services import config
-from information_services.my_logger import logger
-
+from information_services_backend import config
+from information_services_backend.my_logger import logger
 import random
-# login = config.GLONASS_LOGIN # логин клиента
-# password = config.GLONASS_PASS # логин клиента
-# based_adres=str(config.GLONASS_BASED_ADRESS)
 
 class Glonasssoft:
     """ 
@@ -114,18 +110,3 @@ class Glonasssoft:
             }
         return self._post_request(f"{self.based_adres}v3/vehicles/fuelInOut", token, data)
 
-# glonass = Glonasssoft(login, password, based_adres)
-# glonass_token = glonass.token()
-# print(glonass_token)
-# # # # # all_vehicles = glonass.get_all_vehicles_old(str(glonass_token))
-# expen_data = glonass.get_expense(glonass_token, 548938, "2024-11-18T00:01", "2024-11-18T23:59")
-# print(expen_data[0])
-# print(expen_data[0]["name"])
-# print(expen_data[0]["periods"][0]["fuelLevelStart"])
-# print(expen_data[0]["periods"][0]["fuelLevelEnd"])
-# refuel_data = glonass.get_refuel(glonass_token, 548938, "2024-11-18T00:01", "2024-11-18T23:59")
-# print(refuel_data[0])
-# print(refuel_data[0])
-# print(refuel_data[0])
-# print(refuel_data[0])
-# print(refuel_data[0])
