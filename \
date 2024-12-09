@@ -43,7 +43,7 @@ class TaskGenerator:
             del self.task_registry[serv_obj_id]
             logger.info(f"Задача {serv_obj_id} остановлена.")
 
-    def save_data_db_three(self, **kwargs):
+    def save_data_db_three(self, result, **kwargs):
         try:
             from information_services_backend.data_base import crud
             monitoring_sys_name = crud.get_sys_mon_name(kwargs['monitoring_sys'])
@@ -58,10 +58,10 @@ class TaskGenerator:
                     client_name=cl_data[0],
                     it_name=cl_data[1],
                     necessary_treatment=kwargs['stealth_type'],
-                    result=kwargs["result"],
+                    result=result,
                     login=kwargs['sys_login']
             )
-            logger.info(f"Отчёт отправился в БД_3 {kwargs['serv_obj_id']} {kwargs['result']} программа засыпает")
+            logger.info(f"Отчёт отправился в БД_3 {kwargs['serv_obj_id']} {result} программа засыпает")
         except Exception as e:
             logger.error(f"НЕ удалось отправить данные в БД {kwargs['serv_obj_id']} {e}")
 
@@ -96,7 +96,7 @@ class TaskGenerator:
         elif kwargs['service_counter'] == 1:
             result = None
             # выполнять отчёт каждый день в 09:00-09:05
-            if now_time.hour == 9 and now_time.minute in range(0, 2):
+            if now_time.hour == 9 and now_time.minute in range(0, 30):
                 logger.info(f"Выполняется ежедневный отчёт для задачи {kwargs['serv_obj_id']}")
                 if kwargs['monitoring_sys'] == 1:
                     glonas_report = GlonassReport(kwargs['sys_login'],kwargs['sys_password'], GLONASS_BASED_ADRESS)
