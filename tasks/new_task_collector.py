@@ -1,15 +1,11 @@
-# tasks/task_collector.py
 from datetime import datetime
 import time
 from threading import Thread, Event
-from subprocess import call
 import sys
 import random
 
 sys.path.append('../')
 from information_services_backend.my_logger import logger
-from information_services_backend.generating_reports.glonass_reports import GlonassReport
-from information_services_backend.config import GLONASS_BASED_ADRESS
 
 class TaskGenerator:
     """
@@ -70,6 +66,7 @@ class TaskGenerator:
         """
         Реализация make_report как есть.
         """
+        from tasks.report_manager import ManageReport
         now_time = self._get_now_time()
         kwargs["now_time"] = now_time
         if kwargs["service_counter"] == 0:
@@ -77,12 +74,8 @@ class TaskGenerator:
             logger.info(f"Начался выполнятся мгновенный отчёт для задачи {kwargs['serv_obj_id']}")
             result = None
             try:
-                if kwargs["monitoring_sys"] == 1:
-                    glonas_report = GlonassReport(kwargs["sys_login"], kwargs["sys_password"], GLONASS_BASED_ADRESS)
-                    if kwargs['info_obj_serv_id'] == 2:
-                        time.sleep(random.uniform(0.9, 1.8))
-                        result = glonas_report.get_now_serv_fuel_up_down(kwargs["sys_id_obj"])
-                        logger.info(f"Отчёт по {kwargs['serv_obj_id']} {result}")
+                report = ManageReport(**kwargs)
+                result = report.get_sys_mon_report()
             except Exception as e:
                 logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {kwargs['serv_obj_id']} {e}")
             else:
@@ -94,86 +87,57 @@ class TaskGenerator:
                 time.sleep(300)
 
         elif kwargs['service_counter'] == 1:
-            result = None
             # выполнять отчёт каждый день в 09:00-09:05
             if now_time.hour == 9 and now_time.minute in range(0, 2):
                 logger.info(f"Выполняется ежедневный отчёт для задачи {kwargs['serv_obj_id']}")
-                if kwargs['monitoring_sys'] == 1:
-                    glonas_report = GlonassReport(kwargs['sys_login'],kwargs['sys_password'], GLONASS_BASED_ADRESS)
-                    try:
-                        if kwargs['info_obj_serv_id'] == 3: # информация по расходу за предыдущий день
-                            time.sleep(random.uniform(0.9, 1.8))
-                            result = glonas_report.get_yest_serv_fuel_flow(kwargs['sys_id_obj'])
-                            logger.info(f"Отчёт по {kwargs['serv_obj_id']} {result}")
-
-                        if kwargs['info_obj_serv_id'] == 2: # информация по сливам и заправкам за предыдущий день
-                            time.sleep(random.uniform(0.9, 1.8))
-                            result = glonas_report.get_yest_serv_fuel_up_down(kwargs['sys_id_obj'])
-                            logger.info(f"Отчёт по {kwargs['serv_obj_id']} {result}")
-
-                    except Exception as e:
-                        logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {kwargs['serv_obj_id']} {e}")
-                # Здесь можно добавить код для выполнения отчета
-                    else:
-                        if result:
-                            kwargs["result"] = result
-                            self.save_data_db_three(**kwargs)
-                    finally:
-                        time.sleep(60)  # Ждем минуту, чтобы не выполнять отчет несколько раз в течение одной минуты
+                result = None
+                try:
+                    report = ManageReport(**kwargs)
+                    result = report.get_sys_mon_report()
+                except Exception as e:
+                    logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {kwargs['serv_obj_id']} {e}")
+                else:
+                    if result:
+                        kwargs["result"] = result
+                        self.save_data_db_three(**kwargs)
+                finally:
+                    time.sleep(60)  # Ждем минуту, чтобы не выполнять отчет несколько раз в течение одной минуты
             
         elif kwargs['service_counter'] == 2:
-            result = None
             # выполнять отчёт раз в неделю по понедельникам
             if now_time.weekday() == 0 and now_time.hour == 0 and now_time.minute == 0:
                 logger.info(f"Выполняется еженедельный отчёт для задачи {kwargs['serv_obj_id']}")
-                if kwargs['monitoring_sys'] == 1:
-                    glonas_report = GlonassReport(kwargs['sys_login'], kwargs['sys_password'], GLONASS_BASED_ADRESS)
-                    try:
-                        if kwargs['info_obj_serv_id'] == 3: # информация по расходу за предыдущий день
-                            time.sleep(random.uniform(0.9, 1.8))
-                            result = glonas_report.get_yest_serv_fuel_flow(kwargs['sys_id_obj'])
-                            logger.info(f"Отчёт по {kwargs['serv_obj_id']} {result}")
-                        if kwargs['info_obj_serv_id'] == 2: # информация по сливам и заправкам за предыдущий день
-                            time.sleep(random.uniform(0.9, 1.8))
-                            result = glonas_report.get_yest_serv_fuel_up_down(kwargs['sys_id_obj'])
-                            logger.info(f"Отчёт по {kwargs['serv_obj_id']} {result}")
-                    except Exception as e:
-                        logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {kwargs['serv_obj_id']} {e}")
-                # Здесь можно добавить код для выполнения отчета
-                    else:
-                        if result:
-                            kwargs["result"] = result
-                            self.save_data_db_three(**kwargs)
-                    finally:
-                        time.sleep(60 * 60 * 24)  # Ждем сутки, чтобы не выполнять отчет несколько раз в течение недели
+                result = None
+                try:
+                    report = ManageReport(**kwargs)
+                    result = report.get_sys_mon_report()
+                except Exception as e:
+                    logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {kwargs['serv_obj_id']} {e}")
+            # Здесь можно добавить код для выполнения отчета
+                else:
+                    if result:
+                        kwargs["result"] = result
+                        self.save_data_db_three(**kwargs)
+                finally:
+                    time.sleep(60 * 60 * 24)  # Ждем сутки, чтобы не выполнять отчет несколько раз в течение недели
 
         elif kwargs['service_counter'] == 3:
-            result = None
             # выполнять отчёт раз в месяц каждого первого числа
             if now_time.day == 1 and now_time.hour == 0 and now_time.minute == 0:
                 logger.info(f"Выполняется ежемесячный отчёт для задачи {kwargs['serv_obj_id']}")
-                if kwargs['monitoring_sys'] == 1:
-                    glonas_report = GlonassReport(kwargs['sys_login'], kwargs['sys_password'], GLONASS_BASED_ADRESS)
-                    try:
-                        if kwargs['info_obj_serv_id'] == 3: # информация по расходу за предыдущий день
-                            time.sleep(random.uniform(0.9, 1.8))
-                            result = glonas_report.get_yest_serv_fuel_flow(kwargs['sys_id_obj'])
-                            logger.info(f"Отчёт по {kwargs['serv_obj_id']} {result}")
-
-                        if kwargs['info_obj_serv_id'] == 2: # информация по сливам и заправкам за предыдущий день
-                            time.sleep(random.uniform(0.9, 1.8))
-                            result = glonas_report.get_yest_serv_fuel_up_down(kwargs['sys_id_obj'])
-                            logger.info(f"Отчёт по {kwargs['serv_obj_id']} {result}")
-
-                    except Exception as e:
-                        logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {kwargs['serv_obj_id']} {e}")
-                # Здесь можно добавить код для выполнения отчета
-                    else:
-                        if result:
-                            kwargs["result"] = result
-                            self.save_data_db_three(**kwargs)
-                    finally:
-                        time.sleep(60 * 60 * 24)  # Ждем сутки, чтобы не выполнять отчет несколько раз в течение недели
+                result = None
+                try:
+                    report = ManageReport(**kwargs)
+                    result = report.get_sys_mon_report()
+                except Exception as e:
+                    logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {kwargs['serv_obj_id']} {e}")
+            # Здесь можно добавить код для выполнения отчета
+                else:
+                    if result:
+                        kwargs["result"] = result
+                        self.save_data_db_three(**kwargs)
+                finally:
+                    time.sleep(60 * 60 * 24)  # Ждем сутки, чтобы не выполнять отчет несколько раз в течение недели
 
     def starter_task(self, **kwargs):
         """
