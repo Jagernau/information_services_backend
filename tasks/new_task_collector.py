@@ -84,7 +84,7 @@ class TaskGenerator:
                     self.save_data_db_three(**kwargs)
             finally:
                 logger.info(f"Программа засыпает {kwargs['serv_obj_id']}")
-                time.sleep(300)
+                time.sleep(1800)
 
         elif kwargs['service_counter'] == 1:
             # выполнять отчёт каждый день в 09:00-09:05

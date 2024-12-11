@@ -31,10 +31,10 @@ class ManageReport:
 
     def _get_interval_convert(self):
         now = self.kwargs["now_time"]
-        if self.kwargs["service_counter"] == 0: # через 5мин
+        if self.kwargs["service_counter"] == 0: # через 30мин
             return {
                     "end": now.strftime("%Y-%m-%dT%H:%M:%S"),
-                    "start": (now - timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%S")
+                    "start": (now - timedelta(minutes=30)).strftime("%Y-%m-%dT%H:%M:%S")
                     }
         if self.kwargs["service_counter"] == 1: # за предыдущий день
             yesterday = now - timedelta(days=1)
