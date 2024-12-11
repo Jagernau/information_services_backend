@@ -14,11 +14,12 @@ class ManageReport:
 
     def __enter__(self):
         if self.kwargs["monitoring_sys"] == 1: #Глонасс
-            self.report = GlonassReport(
+            rep = GlonassReport(
                 self.kwargs["sys_login"],
                 self.kwargs["sys_password"],
                 GLONASS_BASED_ADRESS,
             )
+            self.report = rep
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -71,7 +72,7 @@ class ManageReport:
 
             if self.kwargs['info_obj_serv_id'] == 3: #Расход
                 interval = self._get_interval_convert()
-                result = glonas_report.get_fuel_up_down(
+                result = self.report.get_fuel_up_down(
                         self.kwargs["sys_id_obj"],
                         interval["start"],
                         interval["end"]
