@@ -25,8 +25,8 @@ class ManageReport:
     def __exit__(self, exc_type, exc_value, traceback):
         """Clean up resources and handle exceptions."""
         if exc_type:
-            logger.error(f"Exception in ManageReport: {exc_type}, {exc_value}")
-        logger.info(f"Cleaning up resources for ManageReport with kwargs: {self.kwargs}")
+            logger.error(f"Exception in ManageReport")
+        logger.info(f"Cleaning up resources for ManageReport")
         self.report = None
 
     def _get_interval_convert(self):
@@ -72,7 +72,7 @@ class ManageReport:
 
             if self.kwargs['info_obj_serv_id'] == 3: #Расход
                 interval = self._get_interval_convert()
-                result = self.report.get_fuel_up_down(
+                result = self.report.get_fuel_flow(
                         self.kwargs["sys_id_obj"],
                         interval["start"],
                         interval["end"]

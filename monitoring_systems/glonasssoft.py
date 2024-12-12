@@ -16,6 +16,7 @@ class Glonasssoft:
         self.login = login
         self.password = password
         self.based_adres = based_adres
+        self.max_attempts = 200
 
     def gen_random_num(self):
         return random.uniform(1.2, 3.7)
@@ -30,13 +31,19 @@ class Glonasssoft:
         if response.status_code == 200:
             return response.json()["AuthId"]
         else:
-            time.sleep(self.gen_random_num())
-            response = requests.post(url, data=json.dumps(data), headers=headers)
-            if response.status_code == 200:
-                return response.json()["AuthId"]
-            else:
-                logger.info(f"Не получен ТОКЕН")
-                return None
+            count_box = 0
+            check_box = 0
+            while check_box == 0:
+                time.sleep(self.gen_random_num())
+                response = requests.post(url, data=json.dumps(data), headers=headers)
+                if response.status_code == 200:
+                    check_box += 1
+                    return response.json()["AuthId"]
+                else:
+                    logger.info(f"Не получен ТОКЕН попытка {count_box}")
+                if count_box == self.max_attempts:
+                    logger.info(f"Совсем не получен TOKEN попытка {count_box}")
+                    break
 
 
     def _get_request(self, url, token):
@@ -51,13 +58,19 @@ class Glonasssoft:
         if response.status_code == 200:
             return response.json()
         else:
-            time.sleep(self.gen_random_num())
-            response = requests.get(url, headers=headers)
-            if response.status_code == 200:
-                return response.json()
-            else:
-                logger.info(f"Не получен GET")
-                return None
+            count_box = 0
+            check_box = 0
+            while check_box == 0:
+                time.sleep(self.gen_random_num())
+                response = requests.get(url, headers=headers)
+                if response.status_code == 200:
+                    check_box += 1
+                    return response.json()
+                else:
+                    logger.info(f"Не получен GET")
+                if count_box == self.max_attempts:
+                    logger.info(f"Совсем не получен GET попытка {count_box}")
+                    break
 
     def _post_request(self, url, token, data: dict):
         """Универсальный метод для выполнения POST """
@@ -71,13 +84,19 @@ class Glonasssoft:
         if response.status_code == 200:
             return response.json()
         else:
-            time.sleep(self.gen_random_num())
-            response = requests.post(url, headers=headers, data=json.dumps(data))
-            if response.status_code == 200:
-                return response.json()
-            else:
-                logger.info(f"Не получен POST")
-                return None
+            count_box = 0
+            check_box = 0
+            while check_box == 0:
+                time.sleep(self.gen_random_num())
+                response = requests.post(url, headers=headers, data=json.dumps(data))
+                if response.status_code == 200:
+                    check_box += 1
+                    return response.json()
+                else:
+                    logger.info(f"Не получен POST")
+                if count_box == self.max_attempts:
+                    logger.info(f"Совсем не получен POST попытка {count_box}")
+                    break
 
     def get_all_vehicles_old(self, token: str):
         """
