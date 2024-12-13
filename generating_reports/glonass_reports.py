@@ -34,10 +34,10 @@ class GlonassReport:
             end_val = expen_data[0]["periods"][0]["fuelLevelEnd"]
             all_exp = expen_data[0]["periods"][0]["fuelConsumption"]
             move_exp = expen_data[0]["periods"][0]["fuelConsumptionMove"]
-            result = f"Отчёт по расходу\nТС - {name}\nОтчёт {yest_start} - {yest_end}\nНачальный уровень - {start_val}\nКонечный уровень - {end_val}\nПолный расход - {all_exp}\nРасход в движении - {move_exp}"
+            result = f"Отчёт по расходу\nТС - {name}\nОтчёт {start} - {end}\nНачальный уровень - {start_val}\nКонечный уровень - {end_val}\nПолный расход - {all_exp}\nРасход в движении - {move_exp}"
             return result
-        except:
-            logger.error(f"Не получен отчёт расход по топливу")
+        except Exception as e:
+            logger.error(f"Не получен отчёт расход по топливу {e}")
             return None
 
 

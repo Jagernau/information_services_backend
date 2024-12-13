@@ -67,7 +67,7 @@ class Glonasssoft:
                     check_box += 1
                     return response.json()
                 else:
-                    logger.info(f"Не получен GET")
+                    logger.info(f"Не получен GET попытка {count_box}")
                 if count_box == self.max_attempts:
                     logger.info(f"Совсем не получен GET попытка {count_box}")
                     break
@@ -93,7 +93,7 @@ class Glonasssoft:
                     check_box += 1
                     return response.json()
                 else:
-                    logger.info(f"Не получен POST")
+                    logger.info(f"Не получен POST попытка {count_box}")
                 if count_box == self.max_attempts:
                     logger.info(f"Совсем не получен POST попытка {count_box}")
                     break
