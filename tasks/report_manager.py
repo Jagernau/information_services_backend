@@ -61,6 +61,7 @@ class ManageReport:
         if self.kwargs["monitoring_sys"] == 1: #Глонасс
             if self.report is None:
                 raise ValueError("Report resource not initialized.")
+
             if self.kwargs['info_obj_serv_id'] == 2: #СливЗаправ
                 interval = self._get_interval_convert()
                 result = self.report.get_fuel_up_down(
@@ -73,6 +74,24 @@ class ManageReport:
             if self.kwargs['info_obj_serv_id'] == 3: #Расход
                 interval = self._get_interval_convert()
                 result = self.report.get_fuel_flow(
+                        self.kwargs["sys_id_obj"],
+                        interval["start"],
+                        interval["end"]
+                        )
+                return result
+
+            if self.kwargs['info_obj_serv_id'] == 7: #Сливы
+                interval = self._get_interval_convert()
+                result = self.report.get_fuel_down(  #Сливы
+                        self.kwargs["sys_id_obj"],
+                        interval["start"],
+                        interval["end"]
+                        )
+                return result
+
+            if self.kwargs['info_obj_serv_id'] == 8: #Заправки
+                interval = self._get_interval_convert()
+                result = self.report.get_fuel_up(  #Заправки
                         self.kwargs["sys_id_obj"],
                         interval["start"],
                         interval["end"]
