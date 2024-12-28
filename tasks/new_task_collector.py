@@ -88,7 +88,7 @@ class TaskGenerator:
 
         elif kwargs['service_counter'] == 1:
             # выполнять отчёт каждый день в 09:00-09:05
-            if now_time.hour == 9 and now_time.minute in range(0, 2):
+            if now_time.hour == 9 and now_time.minute in range(0, 1):
                 logger.info(f"Выполняется ежедневный отчёт для задачи {kwargs['serv_obj_id']}")
                 result = None
                 try:
