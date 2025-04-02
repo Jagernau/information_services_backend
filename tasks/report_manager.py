@@ -62,7 +62,7 @@ class ManageReport:
             if self.report is None:
                 raise ValueError("Report resource not initialized.")
 
-            if self.kwargs['info_obj_serv_id'] == 2: #СливЗаправ
+            if self.kwargs['info_obj_serv_id'] == 5: #СливЗаправ
                 interval = self._get_interval_convert()
                 result = self.report.get_fuel_up_down(
                         self.kwargs["sys_id_obj"],
@@ -71,7 +71,7 @@ class ManageReport:
                         )
                 return result
 
-            if self.kwargs['info_obj_serv_id'] == 3: #Расход
+            if self.kwargs['info_obj_serv_id'] == 6: #Расход
                 interval = self._get_interval_convert()
                 result = self.report.get_fuel_flow(
                         self.kwargs["sys_id_obj"],

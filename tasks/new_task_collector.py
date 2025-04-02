@@ -1,6 +1,6 @@
 from datetime import datetime
 import time
-from threading import Thread, Event
+from threading import Thread, Event, Lock
 import sys
 import random
 
@@ -15,6 +15,7 @@ class TaskGenerator:
     def __init__(self):
         self.all_tasks = {}
         self.task_registry = {}  # Tracks tasks by ID with stop signals
+        self.locking = Lock()
 
     def _get_now_time(self):
         """
@@ -46,16 +47,24 @@ class TaskGenerator:
             obj_name = crud.get_obj_name(kwargs['serv_obj_sys_mon_id'])
             cl_data = crud.get_client_name(kwargs['sys_login'],kwargs['sys_password'])
             crud.add_report_to_three(
-                    time_event=kwargs["now_time"],
-                    id_serv_subscription=kwargs['serv_obj_id'],
-                    processing_status=0,
-                    monitoring_system=monitoring_sys_name,
-                    object_name=obj_name,
-                    client_name=cl_data[0],
-                    it_name=cl_data[1],
-                    necessary_treatment=kwargs['stealth_type'],
-                    result=kwargs["result"],
-                    login=kwargs['sys_login']
+                    time_event=kwargs["now_time"], # Время события
+                    id_serv_subscription=kwargs['serv_obj_id'], # ИД подписки
+                    processing_status=0, # Не обработанна
+                    monitoring_system=monitoring_sys_name, # Имя Системы Мониторинга
+                    object_name=obj_name[0], # Имя объекта
+                    client_name=cl_data[0], # Имя Клиента
+                    it_name=cl_data[1], # Имя ИТ специалиста Клиента
+                    necessary_treatment=kwargs['stealth_type'], # Необходимость подтверждения
+                    result=kwargs["result"], # Результат
+                    login=kwargs['sys_login'], # Логин
+                    # Добавить
+                    password=kwargs['sys_password'], # Пароль
+                    place_shipment=kwargs['send_meth'], # Место отправки
+                    fault_type=kwargs['info_obj_serv_id'], # Вид сервиса 
+                    db_obj_id=kwargs['serv_obj_sys_mon_id'], # ИД объекта в БД 
+                    client_id=cl_data[3], # ИД Клиента в БД
+                    ok_client_id=cl_data[2], # ОКДЕСК ИД Клиента в БД
+                    ok_desk_obj_id=obj_name[1] # ОКДЕСК ИД объекта
             )
             logger.info(f"Отчёт отправился в БД_3 {kwargs['serv_obj_id']} {kwargs['result']} программа засыпает")
         except Exception as e:
@@ -75,7 +84,8 @@ class TaskGenerator:
             result = None
             try:
                 with ManageReport(**kwargs) as report:
-                    result = report.get_sys_mon_report()
+                    with self.locking:
+                        result = report.get_sys_mon_report()
             except Exception as e:
                 logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {kwargs['serv_obj_id']} {e}")
             else:
@@ -93,7 +103,8 @@ class TaskGenerator:
                 result = None
                 try:
                     with ManageReport(**kwargs) as report:
-                        result = report.get_sys_mon_report()
+                        with self.locking:
+                            result = report.get_sys_mon_report()
                 except Exception as e:
                     logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {kwargs['serv_obj_id']} {e}")
                 else:
@@ -110,7 +121,8 @@ class TaskGenerator:
                 result = None
                 try:
                     with ManageReport(**kwargs) as report:
-                        result = report.get_sys_mon_report()
+                        with self.locking:
+                            result = report.get_sys_mon_report()
                 except Exception as e:
                     logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {kwargs['serv_obj_id']} {e}")
             # Здесь можно добавить код для выполнения отчета
@@ -128,7 +140,8 @@ class TaskGenerator:
                 result = None
                 try:
                     with ManageReport(**kwargs) as report:
-                        result = report.get_sys_mon_report()
+                        with self.locking:
+                            result = report.get_sys_mon_report()
                 except Exception as e:
                     logger.error(f"НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТЧЁТ {kwargs['serv_obj_id']} {e}")
             # Здесь можно добавить код для выполнения отчета

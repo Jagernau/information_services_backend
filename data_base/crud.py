@@ -5,8 +5,22 @@ from data_base.db_conectors import MysqlDatabaseThree
 
 def get_actual_serv_two(data_now):
     """
-    Отдаёт логи по объектам за периуд времени
+    Отдаёт сервисы по объектам за периуд времени
     Добавленные
+
+    serv_obj_id
+    serv_obj_sys_mon_id
+    info_obj_serv_id
+    subscription_start
+    subscription_end
+    tel_num_user
+    service_counter
+    stealth_type
+    monitoring_sys
+    sys_id_obj
+    sys_login
+    sys_password
+    send_meth
     """
     db = MysqlDatabaseTwo()
     session = db.session
@@ -26,11 +40,19 @@ def add_report_to_three(
             client_name, # 'Имя клиента' --- - 
             it_name, # 'Имя фамилия ИТ специалиста' ---
             necessary_treatment, # 'Нужна ли обработка IT специалистом'
-            result,
-            login
+            result, # Результат
+            login, # Логин
+            password, # Пароль
+            place_shipment, # Место отправки
+            fault_type, # Вид сервиса 
+            db_obj_id, # ИД объекта в БД 
+            client_id, # ИД Клиента в БД
+            ok_client_id, # ОКДЕСК ИД Клиента в БД
+            ok_desk_obj_id # ОКДЕСК ИД объекта
+
         ):
     """
-    Добавляется отчёт в Базу данных 2
+    Добавляется отчёт в Базу данных 3
     """
     db = MysqlDatabaseThree()
     session = db.session
@@ -44,7 +66,15 @@ def add_report_to_three(
                 it_name=it_name,
                 necessary_treatment=necessary_treatment,
                 result=result,
-                login=login
+                login=login,
+
+                password=password, # Пароль
+                place_shipment=place_shipment, # Место отправки
+                fault_type=fault_type, # Вид сервиса 
+                db_obj_id=db_obj_id, # ИД объекта в БД 
+                client_id=client_id, # ИД Клиента в БД
+                ok_client_id=ok_client_id, # ОКДЕСК ИД Клиента в БД
+                ok_desk_obj_id=ok_desk_obj_id # ОКДЕСК ИД объекта
             )
     session.add(report)
     session.commit()
@@ -52,6 +82,7 @@ def add_report_to_three(
 
 
 def get_sys_mon_name(sys_mon_id) -> str:
+    'Отдаёт Название системы мониторинга'
     db = MysqlDatabaseTwo()
     session = db.session
     result = session.query(models_two.MonitoringSystem).filter(
@@ -61,20 +92,24 @@ def get_sys_mon_name(sys_mon_id) -> str:
     return result.mon_sys_name
 
 def get_obj_name(serv_obj_sys_mon_id) -> str:
+    "Отдаёт имя объекта"
     db = MysqlDatabaseTwo()
     session = db.session
     result = session.query(models_two.CaObject).filter(
             models_two.CaObject.id == serv_obj_sys_mon_id
             ).first()
     session.close()
-    return result.object_name
+    return [result.object_name, result.ok_desk_id]
 
 def get_client_name(sys_login, sys_password):
+    "Отдаёт имя клиента"
     db = MysqlDatabaseTwo()
     session = db.session
     result = session.query(
             models_two.Contragent.ca_name,
             models_two.Contragent.service_manager,
+            models_two.Contragent.ok_desk_id,
+            models_two.Contragent.ca_id,
             ).select_from(models_two.LoginUser).outerjoin(
                     models_two.Contragent, models_two.LoginUser.contragent_id == models_two.Contragent.ca_id
                     ).filter(
@@ -82,5 +117,5 @@ def get_client_name(sys_login, sys_password):
                             models_two.LoginUser.password == sys_password
                             ).first()
     session.close()
-    return [result[0], result[1]]
+    return [result[0], result[1], result[2], result[3]]
 
