@@ -32,3 +32,4 @@ class ServiceEvent(Base):
     ok_client_id = Column(Integer, comment='ID Клиента ОКДЕСКА')
     place_shipment = Column(Integer, comment='Место отправки 0- ОКДЕСК 1-ПОЧТА 2-СМС')
     fault_type = Column(Integer, comment='Тип неисправности 0-Не на связи более месяца')
+    time_type = Column(Integer, comment='Сработка отчёта \\r\\n0- мгновенно 1-раз в день 2-раз в неделю 3-раз в месяц')

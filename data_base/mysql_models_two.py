@@ -789,7 +789,7 @@ class InfoServObj(Base):
     sys_id_obj = Column(String(100, 'utf8mb3_unicode_ci'), nullable=False, comment='ID объекта в системе мониторинга')
     sys_login = Column(String(100, 'utf8mb3_unicode_ci'), nullable=False, comment='Логин пользователя от системы мониторинга')
     sys_password = Column(String(100, 'utf8mb3_unicode_ci'), nullable=False, comment='Пароль пользователя от СМ')
-    send_meth = Column(TINYINT, comment='Способ отправки 0 - ОКДЕСК\\r\\n1 - SMS')
+    send_meth = Column(TINYINT, comment='Способ отправки 0 - ОКДЕСК\\r\\n1 - MAIL')
 
     info_obj_serv = relationship('InformationService')
     monitoring_system = relationship('MonitoringSystem')

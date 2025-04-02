@@ -74,7 +74,9 @@ def add_report_to_three(
                 db_obj_id=db_obj_id, # ИД объекта в БД 
                 client_id=client_id, # ИД Клиента в БД
                 ok_client_id=ok_client_id, # ОКДЕСК ИД Клиента в БД
-                ok_desk_obj_id=ok_desk_obj_id # ОКДЕСК ИД объекта
+                ok_desk_obj_id=ok_desk_obj_id, # ОКДЕСК ИД объекта
+
+                time_type=service_counter, # Время формирования отчёта
             )
     session.add(report)
     session.commit()

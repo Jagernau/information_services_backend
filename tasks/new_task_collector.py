@@ -64,7 +64,8 @@ class TaskGenerator:
                     db_obj_id=kwargs['serv_obj_sys_mon_id'], # ИД объекта в БД 
                     client_id=cl_data[3], # ИД Клиента в БД
                     ok_client_id=cl_data[2], # ОКДЕСК ИД Клиента в БД
-                    ok_desk_obj_id=obj_name[1] # ОКДЕСК ИД объекта
+                    ok_desk_obj_id=obj_name[1], # ОКДЕСК ИД объекта
+                    time_type=kwargs['service_counter'] # Время срабатывания отчёта
             )
             logger.info(f"Отчёт отправился в БД_3 {kwargs['serv_obj_id']} {kwargs['result']} программа засыпает")
         except Exception as e:
