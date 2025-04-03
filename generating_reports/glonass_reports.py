@@ -1,21 +1,30 @@
 import sys
+import os
+from jinja2 import Environment, FileSystemLoader
+
 sys.path.append('../')
 from information_services_backend.my_logger import logger
 
 class GlonassReport:
     """
-    Отчёты глонасс
+    Отчёты глонасс с генерацией HTML через Jinja
     """
     def __init__(self, login, password, based_adress):
         from monitoring_systems import glonasssoft
+        
+        # Инициализация Jinja
+        template_path = os.path.join(os.path.dirname(__file__), 'templates')
+        self.env = Environment(loader=FileSystemLoader(template_path))
+        self.env.filters['round'] = lambda x, precision: round(x, precision)
 
         self.login = login
         self.password = password
         self.based_adres = based_adress
         self.glonass_class = glonasssoft.Glonasssoft(
-                login,
-                password,
-                based_adress)
+            login,
+            password,
+            based_adress
+        )
 
     def get_fuel_flow(self, obj_id, start, end):
         """
@@ -34,10 +43,29 @@ class GlonassReport:
             end_val = expen_data[0]["periods"][0]["fuelLevelEnd"]
             all_exp = expen_data[0]["periods"][0]["fuelConsumption"]
             move_exp = expen_data[0]["periods"][0]["fuelConsumptionMove"]
-            result = f"Отчёт по расходу\nТС - {name}\nОтчёт {start} - {end}\nНачальный уровень - {start_val}\nКонечный уровень - {end_val}\nПолный расход - {all_exp}\nРасход в движении - {move_exp}"
-            return result
+            context = {
+                'name': name,
+                'start': start,
+                'end': end,
+                'start_val': start_val,
+                'end_val': end_val,
+                'all_exp': all_exp,
+                'move_exp': move_exp
+            }
+            template = self.env.get_template('fuel_flow.html')
+
+            if end_val and all_exp and move_exp:
+                try:
+                    return template.render(context)
+                except Exception as e:
+                    logger.error(f"Ошибка в шаблоне get_fuel_flow {e}")
+                    return None
+
+
+            else:
+                return None
         except Exception as e:
-            logger.error(f"Не получен отчёт расход по топливу {e}")
+            logger.error(f"Не получен отчёт get_fuel_flow {e}")
             return None
 
 
@@ -76,22 +104,45 @@ class GlonassReport:
                     return None
 
                 if fuelsUps != None and fuelsOuts == None:
-                    for i in fuelsUps:
-                        result += f"ЗАПРАВКИ:\nВремя начала - {i['startDate']}\nВремя окончания - {i['endDate']}\nЗаправленно - {round(i['valueFuel'], 1)}\nТопливо до заправки - {round(i['fuelStart'], 1)}\nТопливо после заправки - {round(i['fuelEnd'], 1)}\n*****\n"
-                    return result
+                    context = {
+                        'name': expen_data[0]["name"],
+                        'fuelsUps': fuelsUps,
+                        'fuelsOuts': None
+                    }
+                    try:
+                        template = self.env.get_template('fuel_up_down.html')
+                        return template.render(context)
+                    except Exception as e:
+                        logger.error(f"Ошибка при создании шаблона get_fuel_up_down {e}")
+                        return None
+
 
                 if fuelsUps == None and fuelsOuts != None:
-                    for i in fuelsOuts:
-                        result += f"СЛИВЫ:\nВремя начала - {i['startDate']}\nВремя окончания - {i['endDate']}\nСлито - {round(i['valueFuel'], 1)}\nТопливо до слива - {round(i['fuelStart'], 1)}\nТопливо после слива - {round(i['fuelEnd'], 1)}\n*****\n"
-                    return result
+                    context = {
+                        'name': expen_data[0]["name"],
+                        'fuelsUps': None,
+                        'fuelsOuts': fuelsOuts
+                    }
+                    try:
+                        template = self.env.get_template('fuel_up_down.html')
+                        return template.render(context)
+                    except Exception as e:
+                        logger.error(f"Ошибка при создании шаблона get_fuel_up_down {e}")
+                        return None
+
 
                 if fuelsUps != None and fuelsOuts != None:
-                    for i in fuelsUps:
-                        result += f"ЗАПРАВКИ:\nВремя начала - {i['startDate']}\nВремя окончания - {i['endDate']}\nЗаправленно - {round(i['valueFuel'], 1)}\nТопливо до заправки - {round(i['fuelStart'], 1)}\nТопливо после заправки - {round(i['fuelEnd'], 1)}\n*****\n"
-
-                    for i in fuelsOuts:
-                        result += f"СЛИВЫ:\nВремя начала - {i['startDate']}\nВремя окончания - {i['endDate']}\nСлито - {round(i['valueFuel'], 1)}\nТопливо до слива - {round(i['fuelStart'], 1)}\nТопливо после слива - {round(i['fuelEnd'], 1)}\n*****\n"
-                    return result
+                    context = {
+                        'name': expen_data[0]["name"],
+                        'fuelsUps': fuelsUps,
+                        'fuelsOuts': fuelsOuts
+                    }
+                    try:
+                        template = self.env.get_template('fuel_up_down.html')
+                        return template.render(context)
+                    except Exception as e:
+                        logger.error(f"Ошибка при создании шаблона get_fuel_up_down {e}")
+                        return None
 
 
     def get_fuel_down(self, obj_id, start, end):
@@ -107,14 +158,12 @@ class GlonassReport:
                     end
                     )
         except Exception as e:
-            logger.error(f"Не удаётсся получить отчёт в get_now_serv_fuel_up_down {e}")
+            logger.error(f"Не удаётсся получить отчёт в get_now_serv_down {e}")
             return None
         else:
             if len(expen_data) == 0:
                 return None
-            name = expen_data[0]["name"]
             fuels = expen_data[0]["fuels"] if len(expen_data[0]["fuels"]) >= 1 else None
-            result = f"Отчёт по сливам ТС - {name}\n"
             if fuels == None:
                 logger.error(f"Нет движения топлива get_yest_serv_fuel_up_down")
                 return None
@@ -126,9 +175,17 @@ class GlonassReport:
                     return None
 
                 if fuelsOuts != None:
-                    for i in fuelsOuts:
-                        result += f"СЛИВЫ:\nВремя начала - {i['startDate']}\nВремя окончания - {i['endDate']}\nСлито - {round(i['valueFuel'], 1)}\nТопливо до слива - {round(i['fuelStart'], 1)}\nТопливо после слива - {round(i['fuelEnd'], 1)}\n*****\n"
-                    return result
+                    context = {
+                        'name': expen_data[0]["name"],
+                        'fuelsOuts': fuelsOuts
+                    }
+                    try:
+                        template = self.env.get_template('fuel_down.html')
+                        return template.render(context)
+                    except Exception as e:
+                        logger.error(f"Ошибка при создании шаблона get_now_serv_fuel_down {e}")
+                        return None
+
 
 
     def get_fuel_up(self, obj_id, start, end):
@@ -149,11 +206,9 @@ class GlonassReport:
         else:
             if len(expen_data) == 0:
                 return None
-            name = expen_data[0]["name"]
             fuels = expen_data[0]["fuels"] if len(expen_data[0]["fuels"]) >= 1 else None
-            result = f"Отчёт по заправкам и сливам ТС - {name}\n"
             if fuels == None:
-                logger.error(f"Нет движения топлива get_yest_serv_fuel_up_down")
+                logger.error(f"Нет движения топлива get_yest_serv_fuel_up")
                 return None
             else:
                 fuelsUp_list = [i for i in fuels if i["event"] == "FuelIn"]
@@ -163,7 +218,13 @@ class GlonassReport:
                     return None
 
                 if fuelsUps != None:
-                    for i in fuelsUps:
-                        result += f"ЗАПРАВКИ:\nВремя начала - {i['startDate']}\nВремя окончания - {i['endDate']}\nЗаправленно - {round(i['valueFuel'], 1)}\nТопливо до заправки - {round(i['fuelStart'], 1)}\nТопливо после заправки - {round(i['fuelEnd'], 1)}\n*****\n"
-                    return result
-
+                    context = {
+                        'name': expen_data[0]["name"],
+                        'fuelsUps': fuelsUps
+                    }
+                    try:
+                        template = self.env.get_template('fuel_up.html')
+                        return template.render(context)
+                    except Exception as e:
+                        logger.error(f"Ошибка при создании шаблона get_fuel_up {e}")
+                        return None

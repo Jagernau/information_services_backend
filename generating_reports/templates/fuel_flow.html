@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<body>
+<table border="1" cellpadding="5" style="border-collapse: collapse; width: 100%;">
+    <caption><h3>Отчёт по расходу топлива</h3></caption>
+    <tr>
+        <th style="width: 30%;">Транспортное средство</th>
+        <td>{{ name }}</td>
+    </tr>
+    <tr>
+        <th>Период отчёта</th>
+        <td>{{ start }} - {{ end }}</td>
+    </tr>
+    <tr>
+        <th>Начальный уровень топлива</th>
+        <td>{{ start_val }}</td>
+    </tr>
+    <tr>
+        <th>Конечный уровень топлива</th>
+        <td>{{ end_val }}</td>
+    </tr>
+    <tr>
+        <th>Общий расход топлива</th>
+        <td>{{ all_exp }}</td>
+    </tr>
+    <tr>
+        <th>Расход в движении</th>
+        <td>{{ move_exp }}</td>
+    </tr>
+</table>
+</body>
+</html>

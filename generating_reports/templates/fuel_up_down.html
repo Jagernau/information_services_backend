@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<body>
+<table border="1" cellpadding="5" style="border-collapse: collapse; width: 100%;">
+    <caption><h3>Отчёт по заправкам и сливам: {{ name }}</h3></caption>
+    {% if fuelsUps %}
+    <tr>
+        <th colspan="5" style="background-color: #e6f7ff;">ЗАПРАВКИ</th>
+    </tr>
+    <tr>
+        <th>Начало</th>
+        <th>Окончание</th>
+        <th>Объём</th>
+        <th>Уровень до</th>
+        <th>Уровень после</th>
+    </tr>
+    {% for fuel in fuelsUps %}
+    <tr>
+        <td>{{ fuel.startDate }}</td>
+        <td>{{ fuel.endDate }}</td>
+        <td>{{ fuel.valueFuel | round(1) }}</td>
+        <td>{{ fuel.fuelStart | round(1) }}</td>
+        <td>{{ fuel.fuelEnd | round(1) }}</td>
+    </tr>
+    {% endfor %}
+    {% endif %}
+
+    {% if fuelsOuts %}
+    <tr>
+        <th colspan="5" style="background-color: #ffe6e6;">СЛИВЫ</th>
+    </tr>
+    <tr>
+        <th>Начало</th>
+        <th>Окончание</th>
+        <th>Объём</th>
+        <th>Уровень до</th>
+        <th>Уровень после</th>
+    </tr>
+    {% for fuel in fuelsOuts %}
+    <tr>
+        <td>{{ fuel.startDate }}</td>
+        <td>{{ fuel.endDate }}</td>
+        <td>{{ fuel.valueFuel | round(1) }}</td>
+        <td>{{ fuel.fuelStart | round(1) }}</td>
+        <td>{{ fuel.fuelEnd | round(1) }}</td>
+    </tr>
+    {% endfor %}
+    {% endif %}
+</table>
+</body>
+</html>
