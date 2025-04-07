@@ -1,6 +1,6 @@
 # coding: utf-8
 from sqlalchemy import Column, DateTime, Integer, String, text
-from sqlalchemy.dialects.mysql import TINYINT, VARCHAR
+from sqlalchemy.dialects.mysql import MEDIUMTEXT, TINYINT
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -20,7 +20,7 @@ class ServiceEvent(Base):
     client_name = Column(String(300, 'utf8mb3_unicode_ci'), comment='Имя клиента')
     it_name = Column(String(300, 'utf8mb3_unicode_ci'), comment='Имя фамилия ИТ специалиста')
     necessary_treatment = Column(TINYINT, comment='Нужна ли обработка IT специалистом 0 - не нужна обработка 1 - нужна')
-    result = Column(VARCHAR(4000), comment='Результат сервиса')
+    result = Column(MEDIUMTEXT, comment='Результат сервиса')
     login = Column(String(100, 'utf8mb3_unicode_ci'), comment='Логин в системе мониторинга предполагается почта')
     password = Column(String(100, 'utf8mb3_unicode_ci'), comment='Пароль')
     send_status = Column(TINYINT, server_default=text("'0'"), comment='Статус отправленно или нет 0 - не отправленно 1 - отправленно')
